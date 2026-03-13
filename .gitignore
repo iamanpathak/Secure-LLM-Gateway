@@ -1,0 +1,20 @@
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Security / Environment Variables
+.env
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database (If you are using SQLite or similar file-based databases)
+*.db
+*.sqlite3
+
+# OS generated files
+.DS_Store

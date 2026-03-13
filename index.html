@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SECURE LLM GATEWAY FRAMEWORK</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root { --primary: #00d2ff; --accent: #3a7bd5; --bg: #050a14; --glass: rgba(22, 27, 42, 0.8); --border: rgba(255, 255, 255, 0.1); }
+        
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: radial-gradient(circle at top right, #0a192f, #050a14); color: #e2e8f0; margin: 0; padding: 20px; min-height: 100vh; }
+        .container { width: 95%; max-width: 1400px; margin: 0 auto; position: relative; }
+        
+        /* Modern Glassmorphism Design */
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.8); }
+
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 380px; gap: 25px; margin-top: 20px; }
+        
+        .stat-card { text-align: center; border-bottom: 3px solid var(--primary); transition: 0.3s; }
+        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+        .stat-val { font-size: 2.5em; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--primary); }
+        .stat-label { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* Chat Section */
+        #chatbox { height: 400px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 20px; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
+        .user-msg { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; padding: 12px 18px; border-radius: 18px 18px 4px 18px; align-self: flex-start; max-width: 80%; font-weight: 500; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2); }
+        .ai-msg { background: #1e293b; color: #cbd5e1; padding: 12px 18px; border-radius: 18px 18px 18px 4px; align-self: flex-end; max-width: 80%; border: 1px solid var(--border); }
+
+        /* Controls */
+        .mask-controls { display: flex; gap: 15px; margin-bottom: 15px; font-size: 0.85em; color: #94a3b8; padding: 5px 10px; flex-wrap: wrap; }
+        .mask-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        
+        .controls { display: flex; gap: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid var(--border); }
+        input[type="text"] { flex: 1; background: transparent; border: none; color: white; padding: 10px; outline: none; font-size: 1em; }
+        
+        .btn-action { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-action:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--primary); }
+        .btn-secondary { background: #1e293b; color: white; border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .btn-secondary:hover { background: #2d3a4f; border-color: var(--primary); }
+
+        /* Sidebar Charts */
+        .heatmap { height: 180px; border-radius: 15px; background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%); position: relative; border: 1px solid var(--border); overflow: hidden; }
+        .heat-point { position: absolute; width: 14px; height: 14px; background: #ff4d4d; border-radius: 50%; filter: blur(4px); animation: pulse 1.8s infinite; }
+        
+        @keyframes pulse { 0% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(2); } 100% { opacity: 0.3; transform: scale(1); } }
+
+        /* History Table */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
+        th { color: var(--primary); text-transform: uppercase; font-size: 0.7em; padding: 15px; text-align: left; letter-spacing: 1px; }
+        td { background: rgba(255,255,255,0.03); padding: 15px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 0.9em; }
+        td:first-child { border-left: 1px solid var(--border); border-radius: 12px 0 0 12px; }
+        td:last-child { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
+        
+        .tag { color: #f472b6; font-family: 'Courier New', monospace; font-weight: bold; }
+        .blurred-text { filter: blur(6px); cursor: pointer; transition: 0.3s; }
+        .unblur { filter: blur(0) !important; }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-top: 50px; }
+
+        /* --- LOGIN SYSTEM --- */
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: var(--glass); padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,1); }
+        
+        .btn-logout { position: fixed; top: 25px; right: 30px; background: #1e293b; color: #94a3b8; border: 1px solid var(--border); font-size: 0.8em; font-weight: bold; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; z-index: 1000; letter-spacing: 1px; }
+        .btn-logout:hover { background: #f87171; color: white; border-color: #f87171; box-shadow: 0 0 15px rgba(248, 113, 113, 0.4); }
+
+        /* Login Inputs Fix */
+        input.login-input { 
+            width: 100%; 
+            margin-bottom: 15px; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid #334155; 
+            color: white; 
+            padding: 12px; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            outline: none;
+            font-size: 1rem;       
+            font-family: inherit;  
+        }
+
+        /* Hide the ugly default browser eye completely */
+        input.login-input::-ms-reveal,
+        input.login-input::-ms-clear,
+        input.login-input::-webkit-credentials-auto-fill-button {
+            display: none !important;
+        }
+
+        /* Custom Eye Button Styling */
+        .eye-btn {
+            position: absolute;
+            right: 12px;
+            top: 14px;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: 0.2s;
+        }
+        .eye-btn:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="login-box">
+        <h2 style="display: block; margin-bottom: 25px; color: var(--primary);">Gateway Login</h2>
+        
+        <input type="text" id="username" class="login-input" placeholder="Username">
+        
+        <div style="position: relative; width: 100%; margin-bottom: 25px;">
+            <input type="password" id="password" class="login-input" placeholder="Password" style="margin-bottom: 0; padding-right: 40px;" onkeypress="if(event.key==='Enter') performLogin()">
+            <span class="eye-btn" onclick="togglePasswordVisibility()">
+                <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>
+                </svg>
+            </span>
+        </div>
+
+        <button class="btn-action" style="width: 100%; padding: 15px;" onclick="performLogin()">Access Framework</button>
+        <p id="loginError" style="color: #f87171; font-size: 0.85em; display: none; margin-top: 15px;">Invalid Username or Password!</p>
+    </div>
+</div>
+
+<div class="container" id="pdf-export-area" style="display: none;">
+    
+    <button class="btn-logout" onclick="logout()" data-html2canvas-ignore>LOGOUT</button>
+
+    <h1 style="font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 30px; color: var(--primary);">
+        SECURE LLM GATEWAY FRAMEWORK
+    </h1>
+
+    <div class="dashboard-grid">
+        <div class="main-column">
+            <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                <div class="glass-card stat-card" style="flex: 1;">
+                    <span class="stat-label">Total Messages</span>
+                    <span class="stat-val" id="total-msgs">0</span>
+                </div>
+                <div class="glass-card stat-card" style="flex: 1;">
+                    <span class="stat-label">Threats Blocked</span>
+                    <span class="stat-val" id="threats-blocked" style="color:#f87171">0</span>
+                </div>
+                <div class="glass-card stat-card" style="flex: 1;">
+                    <span class="stat-label">SENSITIVE ENTITIES DETECTED</span>
+                    <span class="stat-val" id="entities-detected" style="color:#fbbf24">0</span>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div id="chatbox"></div>
+                
+                <div class="mask-controls" data-html2canvas-ignore>
+                    <label><input type="checkbox" id="maskName" checked> Names</label>
+                    <label><input type="checkbox" id="maskPhone" checked> Phone</label>
+                    <label><input type="checkbox" id="maskEmail" checked> Email</label>
+                    <label><input type="checkbox" id="maskAddress" checked> Address</label>
+                    <label><input type="checkbox" id="maskCard" checked> Cards</label>
+                    <label style="opacity: 0.6; cursor: not-allowed;" title="Mandatory Security Protocol"><input type="checkbox" checked disabled> Govt IDs</label>
+                </div>
+
+                <div class="controls" data-html2canvas-ignore>
+                    <input type="file" id="fileInput" hidden onchange="uploadFile()">
+                    
+                    <button class="btn-secondary" onclick="document.getElementById('fileInput').click()" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; gap: 4px; padding: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="12" y1="18" x2="12" y2="12"></line>
+                            <polyline points="9 15 12 12 15 15"></polyline>
+                        </svg>
+                        <span style="font-size: 0.65em; font-weight: 800; letter-spacing: 1px; color: #94a3b8;">UPLOAD</span>
+                    </button>
+
+                    <input type="text" id="userInput" placeholder="Type message or upload a file..." onkeypress="if(event.key==='Enter') sendMessage()">
+                    <button class="btn-action" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-column" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="glass-card">
+                <span class="stat-label">Real-Time Threat Heatmap</span>
+                <div class="heatmap" id="heatmapContainer"></div>
+                <button class="btn-secondary" onclick="clearHeatmap()" style="width: 100%; margin-top: 15px; color: #f87171; font-size: 0.85em;" data-html2canvas-ignore>Clear Heatmap Data</button>
+            </div>
+            
+            <div class="glass-card" style="text-align: center;">
+                <span class="stat-label">Threat Type Breakdown</span>
+                <div style="height: 280px; margin-top: 15px;">
+                    <canvas id="threadPieChart"></canvas>
+                </div>
+                <button class="btn-secondary" onclick="clearPieChart()" style="width: 100%; margin-top: 15px; color: #f87171; font-size: 0.85em;" data-html2canvas-ignore>Clear Piechart Data</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-flex">
+        <h2 class="stat-label" style="font-size: 1.2em;">📊 Audit History Logs</h2>
+        
+        <div data-html2canvas-ignore>
+            <button class="btn-secondary" onclick="downloadPDF()" style="color: #00d2ff; border-color: #00d2ff; margin-right: 10px;">Export PDF</button>
+            <button class="btn-secondary" onclick="exportCSV()" style="color: #4ade80;">Export CSV</button>
+            <button class="btn-secondary" onclick="clearEverything()" style="color: #f87171; margin-left:10px;">Clear Chat & History</button>
+        </div>
+    </div>
+
+    <table id="historyTable">
+        <thead>
+            <tr>
+                <th>Original Input</th>
+                <th>Secured (Masked)</th>
+                <th>Risk Level</th>
+                <th>AI Response</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    
+    <div style="display: flex; justify-content: flex-end; margin-top: 10px;" data-html2canvas-ignore>
+        <button id="seeMoreBtn" class="btn-secondary" style="display: none; padding: 6px 14px; font-size: 0.8em; border-color: transparent; background: transparent; color: var(--primary);" onclick="toggleLogs()">See More ▼</button>
+    </div>
+</div>
+
+<script>
+    Chart.register(ChartDataLabels); 
+    let pieChart;
+    let entitiesCount = 0;
+    
+    let allLogsData = [];
+    let showAllLogs = false;
+
+    let tempPieData = JSON.parse(localStorage.getItem('savedPieData'));
+    if (!tempPieData || tempPieData.length < 7) { tempPieData = [0, 0, 0, 0, 0, 0, 0]; }
+    let storedPieData = tempPieData;
+    
+    let storedHeatmapData = JSON.parse(localStorage.getItem('savedHeatmapData')) || [];
+
+    // --- FIX: Correct Toggle Password Eye Icon Logic ---
+    function togglePasswordVisibility() {
+        const pwdInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+        
+        if (pwdInput.type === 'password') {
+            // Un-hide the password (Show Text)
+            pwdInput.type = 'text';
+            // Show OPEN EYE (Because now you can see it)
+            eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            eyeIcon.style.color = '#fff';
+        } else {
+            // Hide the password (Show Stars)
+            pwdInput.type = 'password';
+            // Show SLASHED EYE (Because now it's hidden)
+            eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            eyeIcon.style.color = '#94a3b8';
+        }
+    }
+
+    // --- AUTHENTICATION LOGIC ---
+    let authToken = localStorage.getItem('gateway_token');
+
+    window.onload = () => { 
+        if (authToken) {
+            showDashboard();
+        }
+    };
+
+    async function performLogin() {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        
+        const params = new URLSearchParams();
+        params.append('username', u);
+        params.append('password', p);
+
+        try {
+            const res = await fetch('/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                authToken = data.access_token;
+                localStorage.setItem('gateway_token', authToken);
+                document.getElementById('loginError').style.display = 'none';
+                showDashboard();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        } catch (e) { console.log(e); }
+    }
+
+    function logout() {
+        localStorage.removeItem('gateway_token');
+        authToken = null;
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('pdf-export-area').style.display = 'none';
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+
+    function showDashboard() {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('pdf-export-area').style.display = 'block';
+        initChat(); initPieChart(); initHeatmap(); loadHistory();
+    }
+
+    async function fetchWithAuth(url, options = {}) {
+        if (!options.headers) options.headers = {};
+        options.headers['Authorization'] = 'Bearer ' + authToken;
+        
+        const res = await fetch(url, options);
+        if (res.status === 401) { 
+            logout();
+            alert("Session expired. Please login again.");
+            throw new Error("Unauthorized");
+        }
+        return res;
+    }
+
+    // --- EXISTING DASHBOARD LOGIC ---
+    function initChat() {
+        const chatbox = document.getElementById('chatbox');
+        chatbox.innerHTML = localStorage.getItem('chatHistory') || "";
+        chatbox.scrollTop = chatbox.scrollHeight;
+    }
+
+    function initPieChart() {
+        if(pieChart) return; 
+        const ctx = document.getElementById('threadPieChart').getContext('2d');
+        
+        const chartColors = ['#00d2ff', '#f472b6', '#fbbf24', '#4ade80', '#a855f7', '#f87171', '#000000'];
+
+        pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Phone', 'Email', 'Name', 'Address', 'Cards', 'Govt IDs', 'Injections'],
+                datasets: [{
+                    data: storedPieData, 
+                    backgroundColor: chartColors,
+                    hoverBackgroundColor: chartColors,
+                    borderColor: '#1e293b', 
+                    borderWidth: 2,
+                    hoverOffset: 4 
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20, font: { size: 11 } } },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 14 },
+                        formatter: (value) => value > 0 ? value : '' 
+                    }
+                },
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    function initHeatmap() {
+        const container = document.getElementById('heatmapContainer');
+        container.innerHTML = "";
+        storedHeatmapData.forEach(pos => {
+            const p = document.createElement('div');
+            p.className = 'heat-point';
+            p.title = `Source: Web Client | Severity: ${pos.score || 30}% | Status: Intercepted | Date: ${pos.date || 'N/A'} | Time: ${pos.time || 'N/A'}`;
+            p.style.cursor = 'pointer';
+            p.style.left = pos.left;
+            p.style.top = pos.top;
+            container.appendChild(p);
+        });
+    }
+
+    function downloadPDF() {
+        window.scrollTo(0, 0); 
+        const tbody = document.querySelector('#historyTable tbody');
+        const logsToShow = allLogsData.slice(0, 10);
+        tbody.innerHTML = logsToShow.map(row => {
+            const maskedText = row[2];
+            const originalText = row[1];
+            let riskLevel = "SECURE";
+            let riskColor = "#4ade80";
+            if (originalText !== maskedText) {
+                if (maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION")) {
+                    riskLevel = "HIGH";
+                    riskColor = "#f87171";
+                } else {
+                    riskLevel = "MEDIUM";
+                    riskColor = "#fbbf24";
+                }
+            }
+            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskColor}">${riskLevel}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
+        }).join('');
+        const element = document.getElementById('pdf-export-area');
+        const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050a14', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
+        setTimeout(() => { html2pdf().set(opt).from(element).save().then(() => { renderTable(); }); }, 100);
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if(!text) return;
+        const maskOptions = { name: document.getElementById('maskName').checked, phone: document.getElementById('maskPhone').checked, email: document.getElementById('maskEmail').checked, address: document.getElementById('maskAddress').checked, card: document.getElementById('maskCard').checked };
+        const chatbox = document.getElementById('chatbox');
+        chatbox.innerHTML += `<div class="user-msg">${text}</div>`;
+        localStorage.setItem('chatHistory', chatbox.innerHTML);
+        input.value = '';
+        try {
+            const response = await fetchWithAuth('/ask', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: text, options: maskOptions }) });
+            const data = await response.json();
+            chatbox.innerHTML += `<div class="ai-msg">${data.ai_answer}</div>`;
+            chatbox.scrollTop = chatbox.scrollHeight;
+            localStorage.setItem('chatHistory', chatbox.innerHTML);
+            if(data.entity_count) {
+                entitiesCount += data.entity_count;
+                document.getElementById('entities-detected').innerText = entitiesCount;
+                let govtCount = 0; let emailCount = 0; let phoneCount = 0; let addressCount = 0; let cardCount = 0; let injectionCount = 0;
+                const injectionRegex = /\b(?:ignore all previous instructions|bypass|do anything now|dan|system prompt|jailbreak)\b/gi;
+                const injectionMatches = text.match(injectionRegex);
+                if(injectionMatches) injectionCount += injectionMatches.length;
+                const panMatches = text.match(/\b[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\b/g);
+                const aadhaarMatches = text.match(/\b\d{12}\b/g) || text.match(/\b\d{4}\s\d{4}\s\d{4}\b/g);
+                if (panMatches) govtCount += panMatches.length;
+                if (aadhaarMatches) govtCount += aadhaarMatches.length;
+                const emailMatches = text.match(/\b[\w.-]+@[\w.-]+\.\w+\b/g);
+                if (emailMatches) emailCount += emailMatches.length;
+                const phoneMatches = text.match(/\b\d{10}\b/g);
+                if (phoneMatches) phoneCount += phoneMatches.length;
+                const addressRegex = /\b(?:\d{1,5}[a-zA-Z]?\s*[,\-]?\s*)?(?:(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+\s+){0,3}(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Providence|Province|Country)\b(?:\s+(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+){0,3}/gi;
+                if(text.match(addressRegex)) {
+                    let tempAddrText = text.replace(addressRegex, "<ADDRESS>");
+                    tempAddrText = tempAddrText.replace(/(?:<ADDRESS>[\s,]*)+/g, "<ADDRESS> ");
+                    let finalAddrMatches = tempAddrText.match(/<ADDRESS>/g);
+                    if(finalAddrMatches) addressCount += finalAddrMatches.length;
+                }
+                const cardMatches = text.match(/\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b/g);
+                if(cardMatches) cardCount += cardMatches.length;
+                pieChart.data.datasets[0].data[6] += injectionCount; pieChart.data.datasets[0].data[5] += govtCount; pieChart.data.datasets[0].data[4] += cardCount; pieChart.data.datasets[0].data[3] += addressCount; pieChart.data.datasets[0].data[1] += emailCount; pieChart.data.datasets[0].data[0] += phoneCount; 
+                let totalFoundRegex = govtCount + emailCount + phoneCount + addressCount + cardCount + injectionCount;
+                if (data.entity_count > totalFoundRegex) { pieChart.data.datasets[0].data[2] += (data.entity_count - totalFoundRegex); }
+                pieChart.update();
+                localStorage.setItem('savedPieData', JSON.stringify(pieChart.data.datasets[0].data));
+            }
+            if(data.risk_score > 0) addHeatPoint(data.risk_score);
+            loadHistory();
+        } catch (err) { console.error(err); }
+    }
+
+    function addHeatPoint(riskScore) {
+        const container = document.getElementById('heatmapContainer');
+        const p = document.createElement('div');
+        p.className = 'heat-point';
+        const now = new Date();
+        const currentDate = now.toLocaleDateString(); 
+        const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + ':' + now.getSeconds().toString().padStart(2, '0');
+        p.title = `Source: Web Client | Severity: ${riskScore}% | Status: Intercepted | Date: ${currentDate} | Time: ${currentTime}`;
+        p.style.cursor = 'pointer';
+        const leftPos = Math.random() * 90 + '%'; const topPos = Math.random() * 80 + '%';
+        p.style.left = leftPos; p.style.top = topPos; container.appendChild(p);
+        storedHeatmapData.push({left: leftPos, top: topPos, score: riskScore, time: currentTime, date: currentDate});
+        if(storedHeatmapData.length > 20) { storedHeatmapData.shift(); if(container.firstChild) container.removeChild(container.firstChild); }
+        localStorage.setItem('savedHeatmapData', JSON.stringify(storedHeatmapData));
+    }
+
+    async function loadHistory() {
+        try {
+            const res = await fetchWithAuth('/history');
+            const data = await res.json();
+            const res_an = await fetchWithAuth('/analytics');
+            const data_an = await res_an.json();
+            document.getElementById('total-msgs').innerText = data_an.total;
+            document.getElementById('threats-blocked').innerText = data_an.leaks;
+            allLogsData = data.history; renderTable();
+        } catch (e) { console.log("History Load Error:", e); }
+    }
+
+    function renderTable() {
+        const tbody = document.querySelector('#historyTable tbody');
+        const btn = document.getElementById('seeMoreBtn');
+        const logsToShow = showAllLogs ? allLogsData : allLogsData.slice(0, 8);
+        tbody.innerHTML = logsToShow.map(row => {
+            const maskedText = row[2];
+            const originalText = row[1];
+            let riskLevel = "SECURE"; let riskColor = "#4ade80";
+            if (originalText !== maskedText) {
+                if (maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION")) { riskLevel = "HIGH"; riskColor = "#f87171"; } else { riskLevel = "MEDIUM"; riskColor = "#fbbf24"; }
+            }
+            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskColor}">${riskLevel}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
+        }).join('');
+        if (allLogsData.length > 8) { btn.style.display = "inline-block"; btn.innerText = showAllLogs ? "Show Less ▲" : "See More ▼"; } else { btn.style.display = "none"; }
+    }
+
+    function toggleLogs() { showAllLogs = !showAllLogs; renderTable(); }
+
+    async function uploadFile() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => { document.getElementById('userInput').value = e.target.result; sendMessage(); };
+        reader.readAsText(file);
+    }
+
+    function clearHeatmap() { if(confirm("Are you sure?")) { storedHeatmapData = []; localStorage.setItem('savedHeatmapData', JSON.stringify(storedHeatmapData)); document.getElementById('heatmapContainer').innerHTML = ""; } }
+
+    function clearPieChart() { if(confirm("Are you sure?")) { pieChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0]; pieChart.update(); localStorage.setItem('savedPieData', JSON.stringify([0, 0, 0, 0, 0, 0, 0])); } }
+
+    async function clearEverything() {
+        if(confirm("Are you sure?")) {
+            await fetchWithAuth('/clear', { method: 'DELETE' });
+            document.getElementById('chatbox').innerHTML = ""; localStorage.removeItem('chatHistory');
+            entitiesCount = 0; document.getElementById('entities-detected').innerText = "0";
+            document.getElementById('total-msgs').innerText = "0"; document.getElementById('threats-blocked').innerText = "0";
+            allLogsData = []; showAllLogs = false; renderTable();
+        }
+    }
+
+    async function exportCSV() { 
+        try {
+            const res = await fetchWithAuth('/export-csv');
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.style.display = 'none'; a.href = url; a.download = 'security_logs.csv';
+            document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url);
+        } catch (e) { console.log("Export failed:", e); }
+    }
+</script>
+</body>
+</html>
