@@ -76,7 +76,7 @@ async def ask(data: dict, current_user: str = Depends(get_current_user)):
     
     # ⚡ Gateway Short-Circuit (Blocks Threats Instantly)
     if "<PROMPT_INJECTION_DETECTED>" in clean_text:
-        ai_answer = "🚨 SECURITY ALERT: Malicious Prompt Injection Blocked by Gateway."
+        ai_answer = "Malicious Prompt Injection Blocked by Gateway."
         save_to_history(user_text, clean_text, ai_answer)
         return {"ai_answer": ai_answer, "entity_count": clean_text.count("<"), "risk_score": score}
 
@@ -97,6 +97,8 @@ async def ask(data: dict, current_user: str = Depends(get_current_user)):
         lower_text = clean_text.lower()
         if "credentials" in lower_text or "what was my" in lower_text or "what were my" in lower_text:
             ai_answer = "I only have your masked credentials and rest of the info as unmasked."
+        elif "joke" in lower_text:
+            ai_answer = "Why do programmers prefer dark mode? Because light attracts bugs!"
         elif "<" in clean_text:  # If the gateway masked anything (like <NAME> or <AADHAAR_CARD>)
             ai_answer = "Sure, how can I help you?"
         else:

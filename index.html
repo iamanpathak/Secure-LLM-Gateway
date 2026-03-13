@@ -7,87 +7,372 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --primary: #00d2ff; --accent: #3a7bd5; --bg: #050a14; --glass: rgba(22, 27, 42, 0.8); --border: rgba(255, 255, 255, 0.1); }
-        
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background: radial-gradient(circle at top right, #0a192f, #050a14); color: #e2e8f0; margin: 0; padding: 20px; min-height: 100vh; }
-        .container { width: 95%; max-width: 1400px; margin: 0 auto; position: relative; }
-        
-        /* Modern Glassmorphism Design */
-        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.8); }
-
-        .dashboard-grid { display: grid; grid-template-columns: 1fr 380px; gap: 25px; margin-top: 20px; }
-        
-        .stat-card { text-align: center; border-bottom: 3px solid var(--primary); transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.05); }
-        .stat-val { font-size: 2.5em; font-weight: 800; color: #fff; text-shadow: 0 0 10px var(--primary); }
-        .stat-label { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; }
-
-        /* Chat Section */
-        #chatbox { height: 400px; background: rgba(0,0,0,0.3); border-radius: 15px; padding: 20px; overflow-y: auto; margin: 15px 0; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border); }
-        .user-msg { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; padding: 12px 18px; border-radius: 18px 18px 4px 18px; align-self: flex-start; max-width: 80%; font-weight: 500; box-shadow: 0 4px 15px rgba(0, 210, 255, 0.2); }
-        .ai-msg { background: #1e293b; color: #cbd5e1; padding: 12px 18px; border-radius: 18px 18px 18px 4px; align-self: flex-end; max-width: 80%; border: 1px solid var(--border); }
-
-        /* Controls */
-        .mask-controls { display: flex; gap: 15px; margin-bottom: 15px; font-size: 0.85em; color: #94a3b8; padding: 5px 10px; flex-wrap: wrap; }
-        .mask-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-        
-        .controls { display: flex; gap: 12px; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; border: 1px solid var(--border); }
-        input[type="text"] { flex: 1; background: transparent; border: none; color: white; padding: 10px; outline: none; font-size: 1em; }
-        
-        .btn-action { background: var(--primary); color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-action:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--primary); }
-        .btn-secondary { background: #1e293b; color: white; border: 1px solid var(--border); padding: 10px 15px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-        .btn-secondary:hover { background: #2d3a4f; border-color: var(--primary); }
-
-        /* Sidebar Charts */
-        .heatmap { height: 180px; border-radius: 15px; background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, rgba(0,0,0,0.4) 100%); position: relative; border: 1px solid var(--border); overflow: hidden; }
-        .heat-point { position: absolute; width: 14px; height: 14px; background: #ff4d4d; border-radius: 50%; filter: blur(4px); animation: pulse 1.8s infinite; }
-        
-        @keyframes pulse { 0% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(2); } 100% { opacity: 0.3; transform: scale(1); } }
-
-        /* History Table */
-        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; margin-top: 20px; }
-        th { color: var(--primary); text-transform: uppercase; font-size: 0.7em; padding: 15px; text-align: left; letter-spacing: 1px; }
-        td { background: rgba(255,255,255,0.03); padding: 15px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 0.9em; }
-        td:first-child { border-left: 1px solid var(--border); border-radius: 12px 0 0 12px; }
-        td:last-child { border-right: 1px solid var(--border); border-radius: 0 12px 12px 0; }
-        
-        .tag { color: #f472b6; font-family: 'Courier New', monospace; font-weight: bold; }
-        .blurred-text { filter: blur(6px); cursor: pointer; transition: 0.3s; }
-        .unblur { filter: blur(0) !important; }
-
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-top: 50px; }
-
-        /* --- LOGIN SYSTEM --- */
-        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 10, 20, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: var(--glass); padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,1); }
-        
-        .btn-logout { position: fixed; top: 25px; right: 30px; background: #1e293b; color: #94a3b8; border: 1px solid var(--border); font-size: 0.8em; font-weight: bold; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: 0.3s; z-index: 1000; letter-spacing: 1px; }
-        .btn-logout:hover { background: #f87171; color: white; border-color: #f87171; box-shadow: 0 0 15px rgba(248, 113, 113, 0.4); }
-
-        /* Login Inputs Fix */
-        input.login-input { 
-            width: 100%; 
-            margin-bottom: 15px; 
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid #334155; 
-            color: white; 
-            padding: 12px; 
-            border-radius: 10px; 
-            box-sizing: border-box; 
-            outline: none;
-            font-size: 1rem;       
-            font-family: inherit;  
+        :root {
+            --bg: #0d1117;
+            --bg-soft: #111827;
+            --surface: rgba(17, 24, 39, 0.82);
+            --surface-strong: rgba(15, 23, 42, 0.96);
+            --surface-hover: rgba(30, 41, 59, 0.92);
+            --border: rgba(148, 163, 184, 0.16);
+            --border-strong: rgba(148, 163, 184, 0.28);
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --heading: #f8fafc;
+            --primary: #cbd5e1;
+            --primary-soft: #94a3b8;
+            --accent: #64748b;
+            --success: #86efac;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --shadow: 0 20px 45px rgba(0, 0, 0, 0.38);
+            --radius-lg: 22px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
         }
 
-        /* Hide the ugly default browser eye completely */
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(148, 163, 184, 0.08), transparent 30%),
+                radial-gradient(circle at top right, rgba(100, 116, 139, 0.08), transparent 28%),
+                linear-gradient(180deg, #0b1016 0%, #0d1117 45%, #111827 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 22px;
+            box-shadow: var(--shadow);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 24px;
+            margin-top: 22px;
+        }
+
+        .stat-card {
+            text-align: center;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(17, 24, 39, 0.82));
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-strong);
+            background: linear-gradient(180deg, rgba(21, 30, 47, 0.94), rgba(17, 24, 39, 0.88));
+        }
+
+        .stat-val {
+            display: block;
+            margin-top: 10px;
+            font-size: 2.3em;
+            font-weight: 700;
+            color: var(--heading);
+            letter-spacing: -1px;
+        }
+
+        .stat-label {
+            font-size: 0.72em;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        #chatbox {
+            height: 400px;
+            background: rgba(3, 7, 18, 0.38);
+            border-radius: 18px;
+            padding: 18px;
+            overflow-y: auto;
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid var(--border);
+        }
+
+        #chatbox::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chatbox::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 999px;
+        }
+
+        .user-msg {
+            background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+            color: #0f172a;
+            padding: 12px 18px;
+            border-radius: 18px 18px 6px 18px;
+            align-self: flex-start;
+            max-width: 80%;
+            font-weight: 600;
+            box-shadow: 0 8px 22px rgba(148, 163, 184, 0.14);
+        }
+
+        .ai-msg {
+            background: rgba(30, 41, 59, 0.95);
+            color: #dbe4f0;
+            padding: 12px 18px;
+            border-radius: 18px 18px 18px 6px;
+            align-self: flex-end;
+            max-width: 80%;
+            border: 1px solid var(--border);
+        }
+
+        .mask-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.84em;
+            color: var(--muted);
+            padding: 8px 4px;
+            flex-wrap: wrap;
+        }
+
+        .mask-controls label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            padding: 10px;
+            outline: none;
+            font-size: 1em;
+        }
+
+        input[type="text"]::placeholder,
+        input.login-input::placeholder {
+            color: #7c8aa0;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #d8e0ea, #aab6c7);
+            color: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 24px rgba(203, 213, 225, 0.16);
+            filter: brightness(1.02);
+        }
+
+        .btn-secondary {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .heatmap {
+            height: 180px;
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at center, rgba(248, 113, 113, 0.08), transparent 55%),
+                linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.92));
+            position: relative;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .heat-point {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: rgba(248, 113, 113, 0.9);
+            border-radius: 50%;
+            filter: blur(4px);
+            animation: pulse 1.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.25; transform: scale(1); }
+            50% { opacity: 0.95; transform: scale(1.9); }
+            100% { opacity: 0.25; transform: scale(1); }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            margin-top: 20px;
+        }
+
+        th {
+            color: #cbd5e1;
+            text-transform: uppercase;
+            font-size: 0.7em;
+            padding: 15px;
+            text-align: left;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        td {
+            background: rgba(255, 255, 255, 0.025);
+            padding: 15px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9em;
+            color: #d7dee9;
+        }
+
+        td:first-child {
+            border-left: 1px solid var(--border);
+            border-radius: 12px 0 0 12px;
+        }
+
+        td:last-child {
+            border-right: 1px solid var(--border);
+            border-radius: 0 12px 12px 0;
+        }
+
+        .tag {
+            color: #c4b5fd;
+            font-family: "Courier New", monospace;
+            font-weight: bold;
+        }
+
+        .blurred-text {
+            filter: blur(6px);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .unblur { filter: blur(0) !important; }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 42px;
+        }
+
+        #loginScreen {
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at top, rgba(148, 163, 184, 0.08), transparent 30%),
+                rgba(7, 10, 18, 0.94);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: rgba(15, 23, 42, 0.88);
+            padding: 40px;
+            border-radius: 22px;
+            text-align: center;
+            width: 100%;
+            max-width: 360px;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .btn-logout {
+            position: fixed;
+            top: 25px;
+            right: 30px;
+            background: rgba(15, 23, 42, 0.92);
+            color: var(--muted);
+            border: 1px solid var(--border);
+            font-size: 0.8em;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            z-index: 1000;
+            letter-spacing: 1px;
+        }
+
+        .btn-logout:hover {
+            background: rgba(127, 29, 29, 0.88);
+            color: white;
+            border-color: rgba(248, 113, 113, 0.4);
+            box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.08);
+        }
+
+        input.login-input {
+            width: 100%;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            box-sizing: border-box;
+            outline: none;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.18s ease, background 0.18s ease;
+        }
+
+        input.login-input:focus {
+            border-color: #64748b;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
         input.login-input::-ms-reveal,
         input.login-input::-ms-clear,
         input.login-input::-webkit-credentials-auto-fill-button {
             display: none !important;
         }
 
-        /* Custom Eye Button Styling */
         .eye-btn {
             position: absolute;
             right: 12px;
@@ -96,14 +381,47 @@
             color: #94a3b8;
             transition: 0.2s;
         }
+
         .eye-btn:hover { color: #fff; }
+
+        @media (max-width: 1100px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .container {
+                width: 100%;
+            }
+
+            .controls,
+            .header-flex,
+            .mask-controls,
+            .dashboard-grid > .main-column > div:first-child {
+                flex-direction: column;
+            }
+
+            .btn-logout {
+                top: 16px;
+                right: 16px;
+            }
+
+            #chatbox {
+                height: 340px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div id="loginScreen">
     <div class="login-box">
-        <h2 style="display: block; margin-bottom: 25px; color: var(--primary);">Gateway Login</h2>
+        <h2 style="display: block; margin-bottom: 25px; color: #e2e8f0; letter-spacing: 1px; font-weight: 700;">Gateway Login</h2>
         
         <input type="text" id="username" class="login-input" placeholder="Username">
         
@@ -111,7 +429,7 @@
             <input type="password" id="password" class="login-input" placeholder="Password" style="margin-bottom: 0; padding-right: 40px;" onkeypress="if(event.key==='Enter') performLogin()">
             <span class="eye-btn" onclick="togglePasswordVisibility()">
                 <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>
                 </svg>
             </span>
         </div>
@@ -125,7 +443,7 @@
     
     <button class="btn-logout" onclick="logout()" data-html2canvas-ignore>LOGOUT</button>
 
-    <h1 style="font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 30px; color: var(--primary);">
+    <h1 style="font-weight: 700; letter-spacing: 1px; text-align: center; margin-bottom: 30px; color: #f8fafc; text-transform: uppercase; font-size: clamp(1.8rem, 3vw, 2.6rem);">
         SECURE LLM GATEWAY FRAMEWORK
     </h1>
 
@@ -138,11 +456,11 @@
                 </div>
                 <div class="glass-card stat-card" style="flex: 1;">
                     <span class="stat-label">Threats Blocked</span>
-                    <span class="stat-val" id="threats-blocked" style="color:#f87171">0</span>
+                    <span class="stat-val" id="threats-blocked" style="color:#fca5a5">0</span>
                 </div>
                 <div class="glass-card stat-card" style="flex: 1;">
                     <span class="stat-label">SENSITIVE ENTITIES DETECTED</span>
-                    <span class="stat-val" id="entities-detected" style="color:#fbbf24">0</span>
+                    <span class="stat-val" id="entities-detected" style="color:#fcd34d">0</span>
                 </div>
             </div>
 
@@ -162,7 +480,7 @@
                     <input type="file" id="fileInput" hidden onchange="uploadFile()">
                     
                     <button class="btn-secondary" onclick="document.getElementById('fileInput').click()" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; gap: 4px; padding: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #cbd5e1;">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
                             <line x1="12" y1="18" x2="12" y2="12"></line>
@@ -181,7 +499,7 @@
             <div class="glass-card">
                 <span class="stat-label">Real-Time Threat Heatmap</span>
                 <div class="heatmap" id="heatmapContainer"></div>
-                <button class="btn-secondary" onclick="clearHeatmap()" style="width: 100%; margin-top: 15px; color: #f87171; font-size: 0.85em;" data-html2canvas-ignore>Clear Heatmap Data</button>
+                <button class="btn-secondary" onclick="clearHeatmap()" style="width: 100%; margin-top: 15px; color: #fca5a5; font-size: 0.85em;" data-html2canvas-ignore>Clear Heatmap Data</button>
             </div>
             
             <div class="glass-card" style="text-align: center;">
@@ -189,7 +507,7 @@
                 <div style="height: 280px; margin-top: 15px;">
                     <canvas id="threadPieChart"></canvas>
                 </div>
-                <button class="btn-secondary" onclick="clearPieChart()" style="width: 100%; margin-top: 15px; color: #f87171; font-size: 0.85em;" data-html2canvas-ignore>Clear Piechart Data</button>
+                <button class="btn-secondary" onclick="clearPieChart()" style="width: 100%; margin-top: 15px; color: #fca5a5; font-size: 0.85em;" data-html2canvas-ignore>Clear Piechart Data</button>
             </div>
         </div>
     </div>
@@ -198,9 +516,9 @@
         <h2 class="stat-label" style="font-size: 1.2em;">📊 Audit History Logs</h2>
         
         <div data-html2canvas-ignore>
-            <button class="btn-secondary" onclick="downloadPDF()" style="color: #00d2ff; border-color: #00d2ff; margin-right: 10px;">Export PDF</button>
-            <button class="btn-secondary" onclick="exportCSV()" style="color: #4ade80;">Export CSV</button>
-            <button class="btn-secondary" onclick="clearEverything()" style="color: #f87171; margin-left:10px;">Clear Chat & History</button>
+            <button class="btn-secondary" onclick="downloadPDF()" style="color: #cbd5e1; margin-right: 10px;">Export PDF</button>
+            <button class="btn-secondary" onclick="exportCSV()" style="color: #bbf7d0;">Export CSV</button>
+            <button class="btn-secondary" onclick="clearEverything()" style="color: #fca5a5; margin-left:10px;">Clear Chat & History</button>
         </div>
     </div>
 
@@ -218,7 +536,7 @@
     </table>
     
     <div style="display: flex; justify-content: flex-end; margin-top: 10px;" data-html2canvas-ignore>
-        <button id="seeMoreBtn" class="btn-secondary" style="display: none; padding: 6px 14px; font-size: 0.8em; border-color: transparent; background: transparent; color: var(--primary);" onclick="toggleLogs()">See More ▼</button>
+        <button id="seeMoreBtn" class="btn-secondary" style="display: none; padding: 6px 14px; font-size: 0.8em; border-color: transparent; background: transparent; color: #cbd5e1;" onclick="toggleLogs()">See More ▼</button>
     </div>
 </div>
 
@@ -236,27 +554,21 @@
     
     let storedHeatmapData = JSON.parse(localStorage.getItem('savedHeatmapData')) || [];
 
-    // --- FIX: Correct Toggle Password Eye Icon Logic ---
     function togglePasswordVisibility() {
         const pwdInput = document.getElementById('password');
         const eyeIcon = document.getElementById('eyeIcon');
         
         if (pwdInput.type === 'password') {
-            // Un-hide the password (Show Text)
             pwdInput.type = 'text';
-            // Show OPEN EYE (Because now you can see it)
             eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
             eyeIcon.style.color = '#fff';
         } else {
-            // Hide the password (Show Stars)
             pwdInput.type = 'password';
-            // Show SLASHED EYE (Because now it's hidden)
             eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
             eyeIcon.style.color = '#94a3b8';
         }
     }
 
-    // --- AUTHENTICATION LOGIC ---
     let authToken = localStorage.getItem('gateway_token');
 
     window.onload = () => { 
@@ -320,7 +632,6 @@
         return res;
     }
 
-    // --- EXISTING DASHBOARD LOGIC ---
     function initChat() {
         const chatbox = document.getElementById('chatbox');
         chatbox.innerHTML = localStorage.getItem('chatHistory') || "";
@@ -331,7 +642,7 @@
         if(pieChart) return; 
         const ctx = document.getElementById('threadPieChart').getContext('2d');
         
-        const chartColors = ['#00d2ff', '#f472b6', '#fbbf24', '#4ade80', '#a855f7', '#f87171', '#000000'];
+        const chartColors = ['#94a3b8', '#c084fc', '#fbbf24', '#4ade80', '#818cf8', '#f87171', '#ff0000'];
 
         pieChart = new Chart(ctx, {
             type: 'pie',
@@ -341,7 +652,7 @@
                     data: storedPieData, 
                     backgroundColor: chartColors,
                     hoverBackgroundColor: chartColors,
-                    borderColor: '#1e293b', 
+                    borderColor: '#111827', 
                     borderWidth: 2,
                     hoverOffset: 4 
                 }]
@@ -374,28 +685,55 @@
         });
     }
 
+    // --- BULLETPROOF RISK DETECTION HELPER FUNCTION ---
+    function getRiskDetails(originalText, maskedText) {
+        let riskLevel = "SECURE"; 
+        let riskColor = "#86efac";
+
+        // Master Regexes for all entities
+        let highRegex = /\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b|\b[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\b|\b\d{12}\b|\b\d{4}\s\d{4}\s\d{4}\b|(?:ignore all|forget all|bypass|do anything now|\bdan\b|system prompt|jailbreak)/i;
+        let medRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
+        let phoneRegex = /\b\d{10}\b/;
+        let addrRegex = /(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Providence|Province|Country)\b/i;
+
+        // Check if original string has ANY of these threats (Regardless of masking)
+        let hasHigh = highRegex.test(originalText) || maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION");
+        let hasMed = medRegex.test(originalText) || phoneRegex.test(originalText) || addrRegex.test(originalText) || maskedText.includes("EMAIL") || maskedText.includes("PHONE") || maskedText.includes("ADDRESS") || maskedText.includes("NAME");
+
+        // Special Name Checks
+        if (!hasMed && !hasHigh) {
+            let name1 = /\b(?:my name is|i am|i\'m|this is|call me|name is|it is|it was|it\'s)\s+[a-zA-Z]+/i.test(originalText);
+            let name2 = /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/.test(originalText);
+            if (name1 || name2) hasMed = true;
+        }
+
+        // Assign Base Risk
+        if (hasHigh) {
+            riskLevel = "HIGH"; riskColor = "#f87171";
+        } else if (hasMed) {
+            riskLevel = "MEDIUM"; riskColor = "#fbbf24";
+        }
+
+        // If risk exists but data wasn't fully masked
+        if (riskLevel !== "SECURE" && originalText === maskedText) {
+            riskLevel += " (UNMASKED)";
+        }
+
+        return { level: riskLevel, color: riskColor };
+    }
+
     function downloadPDF() {
         window.scrollTo(0, 0); 
         const tbody = document.querySelector('#historyTable tbody');
         const logsToShow = allLogsData.slice(0, 10);
+        
         tbody.innerHTML = logsToShow.map(row => {
-            const maskedText = row[2];
-            const originalText = row[1];
-            let riskLevel = "SECURE";
-            let riskColor = "#4ade80";
-            if (originalText !== maskedText) {
-                if (maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION")) {
-                    riskLevel = "HIGH";
-                    riskColor = "#f87171";
-                } else {
-                    riskLevel = "MEDIUM";
-                    riskColor = "#fbbf24";
-                }
-            }
-            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskColor}">${riskLevel}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
+            const riskData = getRiskDetails(row[1], row[2]);
+            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskData.color}">${riskData.level}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
         }).join('');
+        
         const element = document.getElementById('pdf-export-area');
-        const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#050a14', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
+        const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0d1117', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
         setTimeout(() => { html2pdf().set(opt).from(element).save().then(() => { renderTable(); }); }, 100);
     }
 
@@ -418,9 +756,12 @@
                 entitiesCount += data.entity_count;
                 document.getElementById('entities-detected').innerText = entitiesCount;
                 let govtCount = 0; let emailCount = 0; let phoneCount = 0; let addressCount = 0; let cardCount = 0; let injectionCount = 0;
-                const injectionRegex = /\b(?:ignore all previous instructions|bypass|do anything now|dan|system prompt|jailbreak)\b/gi;
+                
+                // Added "the" variations to injection checking for Pie Chart
+                const injectionRegex = /\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|bypass|do anything now|dan|system prompt|jailbreak)\b/gi;
                 const injectionMatches = text.match(injectionRegex);
                 if(injectionMatches) injectionCount += injectionMatches.length;
+                
                 const panMatches = text.match(/\b[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\b/g);
                 const aadhaarMatches = text.match(/\b\d{12}\b/g) || text.match(/\b\d{4}\s\d{4}\s\d{4}\b/g);
                 if (panMatches) govtCount += panMatches.length;
@@ -481,15 +822,13 @@
         const tbody = document.querySelector('#historyTable tbody');
         const btn = document.getElementById('seeMoreBtn');
         const logsToShow = showAllLogs ? allLogsData : allLogsData.slice(0, 8);
+        
         tbody.innerHTML = logsToShow.map(row => {
-            const maskedText = row[2];
-            const originalText = row[1];
-            let riskLevel = "SECURE"; let riskColor = "#4ade80";
-            if (originalText !== maskedText) {
-                if (maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION")) { riskLevel = "HIGH"; riskColor = "#f87171"; } else { riskLevel = "MEDIUM"; riskColor = "#fbbf24"; }
-            }
-            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskColor}">${riskLevel}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
+            // Reusing the bulletproof helper function
+            const riskData = getRiskDetails(row[1], row[2]);
+            return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskData.color}">${riskData.level}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
         }).join('');
+        
         if (allLogsData.length > 8) { btn.style.display = "inline-block"; btn.innerText = showAllLogs ? "Show Less ▲" : "See More ▼"; } else { btn.style.display = "none"; }
     }
 
