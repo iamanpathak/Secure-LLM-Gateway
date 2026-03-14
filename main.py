@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import ollama
 import uvicorn
@@ -15,6 +16,7 @@ from sanitizer import Sanitizer
 
 pii_sanitizer = Sanitizer()
 app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Initialize Database
 init_db()

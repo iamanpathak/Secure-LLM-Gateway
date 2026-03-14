@@ -1,146 +1,408 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Secure AI Gateway Dashboard</title>
-    <style>
-        :root { --primary: #00d2ff; --secondary: #3a7bd5; --bg: #0f172a; --card-bg: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; min-height: 100vh; padding: 40px 0; }
-        .container { width: 95%; max-width: 1200px; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); }
-        h2 { text-align: center; color: var(--primary); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 30px; }
+:root {
+    --bg: #0d1117;
+    --bg-soft: #111827;
+    --surface: rgba(17, 24, 39, 0.82);
+    --surface-strong: rgba(15, 23, 42, 0.96);
+    --surface-hover: rgba(30, 41, 59, 0.92);
+    --border: rgba(148, 163, 184, 0.16);
+    --border-strong: rgba(148, 163, 184, 0.28);
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --heading: #f8fafc;
+    --primary: #cbd5e1;
+    --primary-soft: #94a3b8;
+    --accent: #64748b;
+    --success: #86efac;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --shadow: 0 20px 45px rgba(0, 0, 0, 0.38);
+    --radius-lg: 22px;
+    --radius-md: 16px;
+    --radius-sm: 12px;
+}
 
-        /* Main Layout */
-        .main-layout { display: flex; gap: 20px; align-items: flex-start; }
-        .chat-section { flex: 3; display: flex; flex-direction: column; }
-        
-        /* Sidebar Statistics (Stacked vertically) */
-        .stats-container { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-        .stat-box { background: #0f172a; padding: 20px; border-radius: 15px; border-left: 5px solid var(--primary); }
-        .stat-label { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
-        .stat-value { font-size: 1.6em; font-weight: bold; }
+* { box-sizing: border-box; }
 
-        /* Chat Styling */
-        #chatbox { height: 400px; border: 1px solid #334155; overflow-y: auto; padding: 20px; margin-bottom: 20px; background: #0f172a; border-radius: 12px; display: flex; flex-direction: column; }
-        .user-msg { background: var(--secondary); color: white; padding: 10px 15px; border-radius: 15px 15px 0 15px; margin-bottom: 15px; align-self: flex-start; max-width: 75%; }
-        .ai-msg { background: #334155; color: #cbd5e1; padding: 10px 15px; border-radius: 15px 15px 15px 0; margin-bottom: 15px; align-self: flex-end; max-width: 75%; border: 1px solid #475569; }
+body {
+    font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+    background:
+        radial-gradient(circle at top left, rgba(148, 163, 184, 0.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(100, 116, 139, 0.08), transparent 28%),
+        linear-gradient(180deg, #0b1016 0%, #0d1117 45%, #111827 100%);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    min-height: 100vh;
+}
 
-        /* Controls */
-        .controls { display: flex; gap: 10px; margin-bottom: 30px; }
-        input { flex: 1; padding: 15px; border: 1px solid #334155; border-radius: 10px; background: #1e293b; color: white; outline: none; }
-        button { padding: 12px 25px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-send { background: linear-gradient(to right, #00d2ff, #3a7bd5); color: white; }
-        .btn-clear { background: transparent; color: #f87171; border: 1px solid #f87171; }
+.container {
+    width: 95%;
+    max-width: 1400px;
+    margin: 0 auto;
+    position: relative;
+}
 
-        /* Table */
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; border-radius: 10px; overflow: hidden; }
-        th { background: #334155; color: var(--primary); padding: 15px; text-align: left; }
-        td { padding: 15px; border-bottom: 1px solid #334155; background: #1e293b; font-size: 0.9em; }
-        .tag { color: #f472b6; font-family: 'Courier New', monospace; font-weight: bold; }
-        .risk-low { color: #4ade80; } .risk-medium { color: #fbbf24; } .risk-high { color: #f87171; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h2>🛡️ Secure AI Gateway</h2>
+.glass-card {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    box-shadow: var(--shadow);
+}
 
-    <div class="main-layout">
-        <div class="chat-section">
-            <div id="chatbox"></div>
-            <div class="controls">
-                <input type="text" id="userInput" placeholder="Type message (e.g., My name is Amit)...">
-                <button class="btn-send" onclick="sendMessage()">Send to AI</button>
-            </div>
-        </div>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    margin-top: 22px;
+}
 
-        <div class="stats-container">
-            <div class="stat-box">
-                <div class="stat-label">Total Messages</div>
-                <div class="stat-value" id="total-msgs">0</div>
-            </div>
-            <div class="stat-box" style="border-left-color: #f472b6;">
-                <div class="stat-label">Leaks Blocked</div>
-                <div class="stat-value" id="leaks-blocked" style="color: #f472b6;">0</div>
-            </div>
-            <div class="stat-box" style="border-left-color: #4ade80;">
-                <div class="stat-label">System Status</div>
-                <div class="stat-value" style="color: #4ade80; font-size: 1.2em;">🟢 Active</div>
-            </div>
-        </div>
-    </div>
+.stat-card {
+    text-align: center;
+    border: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(17, 24, 39, 0.82));
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
 
-    <hr style="border: 0.5px solid #334155; margin: 20px 0;">
+.stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-strong);
+    background: linear-gradient(180deg, rgba(21, 30, 47, 0.94), rgba(17, 24, 39, 0.88));
+}
 
-    <div class="header-flex">
-        <h3>📊 Database History</h3> 
-        <button class="btn-clear" onclick="clearEverything()">🗑️ Clear History</button>
-    </div>
-    <table id="historyTable">
-        <thead>
-            <tr>
-                <th>Original Input</th>
-                <th>Secured (Masked)</th>
-                <th>Risk Level</th>
-                <th>AI Response</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
+.stat-val {
+    display: block;
+    margin-top: 10px;
+    font-size: 2.3em;
+    font-weight: 700;
+    color: var(--heading);
+    letter-spacing: -1px;
+}
 
-<script>
-    window.onload = loadHistory;
+.stat-label {
+    font-size: 0.72em;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 600;
+}
 
-    async function updateAnalytics() {
-        try {
-            const res = await fetch('/analytics');
-            const data = await res.json();
-            document.getElementById('total-msgs').innerText = data.total;
-            document.getElementById('leaks-blocked').innerText = data.leaks;
-        } catch (e) { console.log("Analytics Error:", e); }
+#chatbox {
+    height: 400px;
+    background: rgba(3, 7, 18, 0.38);
+    border-radius: 18px;
+    padding: 18px;
+    overflow-y: auto;
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--border);
+}
+
+#chatbox::-webkit-scrollbar {
+    width: 8px;
+}
+
+#chatbox::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.25);
+    border-radius: 999px;
+}
+
+.user-msg {
+    background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+    color: #0f172a;
+    padding: 12px 18px;
+    border-radius: 18px 18px 6px 18px;
+    align-self: flex-start;
+    max-width: 80%;
+    font-weight: 600;
+    box-shadow: 0 8px 22px rgba(148, 163, 184, 0.14);
+}
+
+.ai-msg {
+    background: rgba(30, 41, 59, 0.95);
+    color: #dbe4f0;
+    padding: 12px 18px;
+    border-radius: 18px 18px 18px 6px;
+    align-self: flex-end;
+    max-width: 80%;
+    border: 1px solid var(--border);
+}
+
+.mask-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 0.84em;
+    color: var(--muted);
+    padding: 8px 4px;
+    flex-wrap: wrap;
+}
+
+.mask-controls label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.controls {
+    display: flex;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+}
+
+input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    padding: 10px;
+    outline: none;
+    font-size: 1em;
+}
+
+input[type="text"]::placeholder,
+input.login-input::placeholder {
+    color: #7c8aa0;
+}
+
+.btn-action {
+    background: linear-gradient(135deg, #d8e0ea, #aab6c7);
+    color: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(203, 213, 225, 0.16);
+    filter: brightness(1.02);
+}
+
+.btn-secondary {
+    background: rgba(15, 23, 42, 0.9);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+}
+
+.heatmap {
+    height: 180px;
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at center, rgba(248, 113, 113, 0.08), transparent 55%),
+        linear-gradient(180deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.92));
+    position: relative;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.heat-point {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: rgba(248, 113, 113, 0.9);
+    border-radius: 50%;
+    filter: blur(4px);
+    animation: pulse 1.8s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.25; transform: scale(1); }
+    50% { opacity: 0.95; transform: scale(1.9); }
+    100% { opacity: 0.25; transform: scale(1); }
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+    margin-top: 20px;
+}
+
+th {
+    color: #cbd5e1;
+    text-transform: uppercase;
+    font-size: 0.7em;
+    padding: 15px;
+    text-align: left;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+td {
+    background: rgba(255, 255, 255, 0.025);
+    padding: 15px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9em;
+    color: #d7dee9;
+}
+
+td:first-child {
+    border-left: 1px solid var(--border);
+    border-radius: 12px 0 0 12px;
+}
+
+td:last-child {
+    border-right: 1px solid var(--border);
+    border-radius: 0 12px 12px 0;
+}
+
+.tag {
+    color: #c4b5fd;
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+}
+
+.blurred-text {
+    filter: blur(6px);
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.unblur { filter: blur(0) !important; }
+
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 42px;
+}
+
+#loginScreen {
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at top, rgba(148, 163, 184, 0.08), transparent 30%),
+        rgba(7, 10, 18, 0.94);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-box {
+    background: rgba(15, 23, 42, 0.88);
+    padding: 40px;
+    border-radius: 22px;
+    text-align: center;
+    width: 100%;
+    max-width: 360px;
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.45);
+}
+
+.btn-logout {
+    position: fixed;
+    top: 25px;
+    right: 30px;
+    background: rgba(15, 23, 42, 0.92);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.25s ease;
+    z-index: 1000;
+    letter-spacing: 1px;
+}
+
+.btn-logout:hover {
+    background: rgba(127, 29, 29, 0.88);
+    color: white;
+    border-color: rgba(248, 113, 113, 0.4);
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.08);
+}
+
+input.login-input {
+    width: 100%;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #334155;
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    outline: none;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+input.login-input:focus {
+    border-color: #64748b;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+input.login-input::-ms-reveal,
+input.login-input::-ms-clear,
+input.login-input::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+.eye-btn {
+    position: absolute;
+    right: 12px;
+    top: 14px;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: 0.2s;
+}
+
+.eye-btn:hover { color: #fff; }
+
+@media (max-width: 1100px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 16px;
     }
 
-    async function sendMessage() {
-        const input = document.getElementById('userInput');
-        if(!input.value) return;
-        const response = await fetch('/ask', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({text: input.value})
-        });
-        const data = await response.json();
-        const chatbox = document.getElementById('chatbox');
-        chatbox.innerHTML += `<div class="user-msg"><b>You:</b> ${input.value}</div>`;
-        chatbox.innerHTML += `<div class="ai-msg"><b>AI:</b> ${data.ai_answer}</div>`;
-        input.value = '';
-        chatbox.scrollTop = chatbox.scrollHeight;
-        loadHistory();
+    .container {
+        width: 100%;
     }
 
-    async function loadHistory() {
-        const response = await fetch('/history');
-        const data = await response.json();
-        const tbody = document.querySelector('#historyTable tbody');
-        tbody.innerHTML = '';
-        data.history.forEach(row => {
-            const safeSecuredText = row[2].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            let riskText = "Low", riskClass = "risk-low";
-            if(row[1] !== row[2]) {
-                riskText = (row[2].includes("PHONE") || row[2].includes("EMAIL")) ? "High" : "Medium";
-                riskClass = riskText === "High" ? "risk-high" : "risk-medium";
-            }
-            tbody.innerHTML += `<tr><td>${row[1]}</td><td class="tag">${safeSecuredText}</td><td class="${riskClass}">${riskText}</td><td>${row[3]}</td></tr>`;
-        });
-        updateAnalytics();
+    .controls,
+    .header-flex,
+    .mask-controls,
+    .dashboard-grid > .main-column > div:first-child {
+        flex-direction: column;
     }
 
-    async function clearEverything() {
-        if(confirm("Delete all history?")) {
-            await fetch('/clear', { method: 'DELETE' });
-            document.getElementById('chatbox').innerHTML = '';
-            loadHistory();
-        }
+    .btn-logout {
+        top: 16px;
+        right: 16px;
     }
-</script>
-</body>
-</html>
+
+    #chatbox {
+        height: 340px;
+    }
+}
