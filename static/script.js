@@ -18,11 +18,11 @@ function togglePasswordVisibility() {
     if (pwdInput.type === 'password') {
         pwdInput.type = 'text';
         eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
-        eyeIcon.style.color = '#fff';
+        eyeIcon.style.color = '#ffffff';
     } else {
         pwdInput.type = 'password';
         eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
-        eyeIcon.style.color = '#94a3b8';
+        eyeIcon.style.color = '#9f9faf';
     }
 }
 
@@ -99,7 +99,7 @@ function initPieChart() {
     if(pieChart) return; 
     const ctx = document.getElementById('threadPieChart').getContext('2d');
     
-    const chartColors = ['#94a3b8', '#c084fc', '#fbbf24', '#4ade80', '#818cf8', '#f87171', '#ff0000'];
+    const chartColors = ['#8f96aa', '#7c4dff', '#d7a43f', '#38a169', '#4f6df5', '#ff7b72', '#ff2b5b'];
 
     pieChart = new Chart(ctx, {
         type: 'pie',
@@ -109,14 +109,14 @@ function initPieChart() {
                 data: storedPieData, 
                 backgroundColor: chartColors,
                 hoverBackgroundColor: chartColors,
-                borderColor: '#111827', 
+                borderColor: '#141416', 
                 borderWidth: 2,
                 hoverOffset: 4 
             }]
         },
         options: {
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20, font: { size: 11 } } },
+                legend: { position: 'bottom', labels: { color: '#9f9faf', padding: 20, font: { size: 11 } } },
                 datalabels: {
                     color: '#fff',
                     font: { weight: 'bold', size: 14 },
@@ -184,7 +184,7 @@ function downloadPDF() {
     }).join('');
     
     const element = document.getElementById('pdf-export-area');
-    const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0d1117', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
+    const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0d0d10', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
     setTimeout(() => { html2pdf().set(opt).from(element).save().then(() => { renderTable(); }); }, 100);
 }
 

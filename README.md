@@ -1,4 +1,4 @@
-# 🛡️ Secure LLM Gateway Framework
+# Secure LLM Gateway Framework
 
 An Enterprise-grade Middleware & Security Dashboard for Large Language Models (LLMs). 
 This framework sits between the user and the LLM, actively intercepting prompts to sanitize Personally Identifiable Information (PII) and block Prompt Injections before they reach the AI.
