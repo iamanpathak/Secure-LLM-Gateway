@@ -1,75 +1,62 @@
-# Secure LLM Gateway Framework
+# 🛡️ Secure LLM Gateway: Vulnerability Mitigation Framework
 
-An Enterprise-grade Middleware & Security Dashboard for Large Language Models (LLMs). 
-This framework sits between the user and the LLM, actively intercepting prompts to sanitize Personally Identifiable Information (PII) and block Prompt Injections before they reach the AI.
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Ollama](https://img.shields.io/badge/AI_Engine-Ollama-black.svg)](https://ollama.com/)
 
-![Python](https://img.shields.io/badge/Python-3.x-blue?style=for-the-badge&logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
-![Ollama](https://img.shields.io/badge/Ollama-TinyLlama-white?style=for-the-badge)
+A lightweight, locally-hosted middleware designed to secure interactions between end-users and Large Language Models (LLMs). It intercepts requests, sanitizes sensitive data (PII), and blocks prompt injection attacks in real-time.
 
-## ✨ Key Features
-* **🔐 JWT Authentication:** Secure login system (`admin` dashboard protection) using PyJWT and bcrypt password hashing.
-* **🕵️‍♂️ Real-Time PII Sanitization:** Automatically masks sensitive Indian & Global data structures using Regex (Emails, Phone Numbers, Credit Cards, Aadhaar Cards, PAN Cards, etc.).
-* **🛡️ Prompt Injection Defense:** Detects and intercepts jailbreak attempts and malicious prompt injections.
-* **📊 Glassmorphism Analytics Dashboard:** Beautiful, modern UI with real-time Threat Heatmaps and Pie Charts (powered by Chart.js).
-* **🗄️ Local Audit Logging:** Saves complete chat histories (Original vs. Masked) securely in a local SQLite Database.
-* **📄 Export Features:** Instantly export security audit logs to **PDF** or **CSV** formats.
+## ⚙️ System Architecture Flow
 
-## 🛠️ Tech Stack
-* **Backend:** FastAPI, Uvicorn, Python
-* **Frontend:** Vanilla JavaScript (ES6), HTML5, CSS3 (Glassmorphism design)
-* **Database:** SQLite3
-* **AI Integration:** Ollama (Local TinyLlama Model)
-* **Libraries:** Chart.js, html2pdf.js, PyJWT, Bcrypt, python-multipart
+```text
+Client ➔ [ FastAPI Gateway ] ➔ 🔍 Sanitizer Engine (PII & Injection Check)
+                                                │
+                                                ▼ (Cleaned Payload)
+[ SQLite Audit DB ] ◄───────────────── 🧠 Local LLM (Ollama)
+```
 
-## 🚀 How to Install and Run Locally
+## ✨ Core Features
+* **🔍 Real-Time PII Redaction:** Automatically masks sensitive information (emails, phone numbers, credit cards, etc.) before the payload reaches the AI model.
+* **🛑 Prompt Injection Defense:** Scans and neutralizes malicious overrides and adversarial prompts.
+* **🧠 100% Local Processing:** Integrates directly with local LLMs via Ollama to ensure complete data privacy and sovereignty.
+* **📊 Audit & Monitoring:** Maintains a secure SQLite audit trail of all interactions, visualized on a JWT-secured admin dashboard.
 
-**1. Clone the repository**
+## 💻 Tech Stack
+* **Backend:** Python 3.10+, FastAPI, PyJWT
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript, Chart.js
+* **AI Engine:** Ollama (Model: `tinyllama`)
+
+## 🚀 Quick Start Guide
+
+### 1. Setup Environment
+Clone the repository and install dependencies:
 ```bash
-git clone [https://github.com/your-username/secure-llm-gateway.git](https://github.com/your-username/secure-llm-gateway.git)
-cd secure-llm-gateway
-2. Create a Virtual Environment
+git clone [https://github.com/iamanpathak/Secure-LLM-Gateway.git](https://github.com/iamanpathak/Secure-LLM-Gateway.git)
+cd Secure-LLM-Gateway
 
-Bash
+# Create and activate virtual environment
 python -m venv .venv
-# On Windows
-.\.venv\Scripts\activate
-# On Mac/Linux
-source .venv/bin/activate
-3. Install Dependencies
+.\.venv\Scripts\activate      # Windows
+# source .venv/bin/activate  # Mac/Linux
 
-Bash
+# Install required packages
 pip install -r requirements.txt
-4. Start the Local AI Model (Ollama)
-Make sure you have Ollama installed on your system.
+```
 
-Bash
+### 2. Start the AI Engine
+Ensure [Ollama](https://ollama.com/) is installed and running locally, then pull the model:
+```bash
 ollama run tinyllama
-5. Run the Secure Gateway Server
+```
 
-Bash
+### 3. Launch the Gateway
+Start the FastAPI application:
+```bash
 python main.py
-6. Access the Dashboard
+```
+Navigate to `http://127.0.0.1:8000` in your web browser to access the interface.
 
-Open your browser and go to: http://127.0.0.1:8000/
-
-Default Credentials:
-
-Username: admin
-
-Password: admin123
-
-📂 Project Structure
-main.py - Core FastAPI server, API endpoints, and AI logic.
-
-sanitizer.py - Regex engine for PII and Threat detection.
-
-database.py - SQLite schema, queries, and JWT validation.
-
-index.html - The frontend UI, Login Screen, and charts.
-
-.gitignore - Protects .env and *.db files from leaking.
-
-🤝 Contribution
-Feel free to fork this repository, create a feature branch, and submit a Pull Request!
+## 🔑 Testing Credentials
+For local development and evaluation, the system initializes with a default administrator account to access the secure monitoring dashboard:
+* **Username:** `admin`
+* **Password:** `admin123`
