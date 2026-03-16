@@ -94,8 +94,8 @@ async def ask(data: dict, current_user: str = Depends(get_current_user)):
         )
         ai_answer = response['message']['content'].strip()
 
-        # 🔥 Step 2: OUTPUT GUARDRAIL (The Ultimate Demo Safety Net)
-        # We overwrite the AI's hallucination with your exact script.
+        # Step 2: OUTPUT GUARDRAIL (The Ultimate Demo Safety Net)
+        # We overwrite the AI's hallucination with the exact script.
         lower_text = clean_text.lower()
         if "credentials" in lower_text or "what was my" in lower_text or "what were my" in lower_text:
             ai_answer = "I only have your masked credentials and rest of the info as unmasked."
@@ -108,7 +108,7 @@ async def ask(data: dict, current_user: str = Depends(get_current_user)):
             ai_answer = "I am a secure AI. How can I assist you today?"
 
     except Exception as e:
-        ai_answer = "⚠️ System Offline: Please start the AI engine (ollama run tinyllama)."
+        ai_answer = "System Offline ⚠️: Please start the AI engine (ollama run tinyllama)."
 
     save_to_history(user_text, clean_text, ai_answer)
     return {"ai_answer": ai_answer, "entity_count": clean_text.count("<"), "risk_score": score}
