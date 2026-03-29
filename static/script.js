@@ -1,16 +1,26 @@
+// Register Chart.js plugins
 Chart.register(ChartDataLabels); 
+
+// Global state for charts and data tables
 let pieChart;
 let entitiesCount = 0;
-
 let allLogsData = [];
 let showAllLogs = false;
 
+// Load saved chart data or start fresh with zeros
 let tempPieData = JSON.parse(localStorage.getItem('savedPieData'));
 if (!tempPieData || tempPieData.length < 7) { tempPieData = [0, 0, 0, 0, 0, 0, 0]; }
 let storedPieData = tempPieData;
 
+// Load saved heatmap locations
 let storedHeatmapData = JSON.parse(localStorage.getItem('savedHeatmapData')) || [];
 
+// Labels for the entity pie chart
+const basePieLabels = ['Phone', 'Email', 'Name', 'Address', 'Cards', 'Govt IDs', 'Injections'];
+
+/**
+ * Toggles the password input between hidden and plain text.
+ */
 function togglePasswordVisibility() {
     const pwdInput = document.getElementById('password');
     const eyeIcon = document.getElementById('eyeIcon');
@@ -26,6 +36,7 @@ function togglePasswordVisibility() {
     }
 }
 
+// Grab the saved JWT token if it exists
 let authToken = localStorage.getItem('gateway_token');
 
 window.onload = () => { 
@@ -34,6 +45,9 @@ window.onload = () => {
     }
 };
 
+/**
+ * Logs the user in and saves their JWT token locally.
+ */
 async function performLogin() {
     const u = document.getElementById('username').value;
     const p = document.getElementById('password').value;
@@ -61,6 +75,9 @@ async function performLogin() {
     } catch (e) { console.log(e); }
 }
 
+/**
+ * Clears the session token and kicks the user back to the login screen.
+ */
 function logout() {
     localStorage.removeItem('gateway_token');
     authToken = null;
@@ -70,12 +87,19 @@ function logout() {
     document.getElementById('password').value = '';
 }
 
+/**
+ * Hides the login screen, loads the dashboard, and boots up the charts.
+ */
 function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('pdf-export-area').style.display = 'block';
     initChat(); initPieChart(); initHeatmap(); loadHistory();
 }
 
+/**
+ * Custom fetch wrapper that auto-injects the Bearer token.
+ * Logs the user out if the token is expired/invalid.
+ */
 async function fetchWithAuth(url, options = {}) {
     if (!options.headers) options.headers = {};
     options.headers['Authorization'] = 'Bearer ' + authToken;
@@ -89,12 +113,18 @@ async function fetchWithAuth(url, options = {}) {
     return res;
 }
 
+/**
+ * Pulls previous chat messages from local storage.
+ */
 function initChat() {
     const chatbox = document.getElementById('chatbox');
     chatbox.innerHTML = localStorage.getItem('chatHistory') || "";
     chatbox.scrollTop = chatbox.scrollHeight;
 }
 
+/**
+ * Builds the doughnut chart for masked entities.
+ */
 function initPieChart() {
     if(pieChart) return; 
     const ctx = document.getElementById('threadPieChart').getContext('2d');
@@ -102,9 +132,11 @@ function initPieChart() {
     const chartColors = ['#8f96aa', '#7c4dff', '#d7a43f', '#38a169', '#4f6df5', '#ff7b72', '#ff2b5b'];
 
     pieChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'doughnut',
         data: {
-            labels: ['Phone', 'Email', 'Name', 'Address', 'Cards', 'Govt IDs', 'Injections'],
+            labels: basePieLabels.map((l, i) => {
+                return `${l}: ${storedPieData[i]}`;
+            }),
             datasets: [{
                 data: storedPieData, 
                 backgroundColor: chartColors,
@@ -115,19 +147,58 @@ function initPieChart() {
             }]
         },
         options: {
+            cutout: '70%',
+            animation: {
+                duration: 800,
+                easing: 'easeOutQuart' 
+            },
             plugins: {
-                legend: { position: 'bottom', labels: { color: '#9f9faf', padding: 20, font: { size: 11 } } },
-                datalabels: {
-                    color: '#fff',
-                    font: { weight: 'bold', size: 14 },
-                    formatter: (value) => value > 0 ? value : '' 
-                }
+                legend: { 
+                    position: 'right', 
+                    align: 'center',
+                    labels: { color: '#9f9faf', padding: 10, font: { family: 'sans-serif', size: 12 }, usePointStyle: true, boxWidth: 8 } 
+                },
+                datalabels: { display: false }
             },
             maintainAspectRatio: false
-        }
+        },
+        plugins: [{
+            id: 'centerTextPlugin',
+            beforeDraw: function(chart) {
+                var width = chart.width, height = chart.height, ctx = chart.ctx;
+                ctx.restore();
+                
+                var total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 1.8em sans-serif";
+                
+                var chartAreaLeft = chart.chartArea.left;
+                var chartAreaRight = chart.chartArea.right;
+                var centerX = chartAreaLeft + (chartAreaRight - chartAreaLeft) / 2;
+                var centerY = chart.chartArea.top + (chart.chartArea.bottom - chart.chartArea.top) / 2;
+                
+                var text = total.toString(),
+                    textX = centerX - (ctx.measureText(text).width / 2),
+                    textY = centerY - 10;
+                ctx.fillText(text, textX, textY);
+                
+                ctx.font = "0.8em sans-serif";
+                ctx.fillStyle = "#9f9faf";
+                var text2 = "Total",
+                    text2X = centerX - (ctx.measureText(text2).width / 2),
+                    text2Y = centerY + 12;
+                ctx.fillText(text2, text2X, text2Y);
+                ctx.save();
+            }
+        }]
     });
 }
 
+/**
+ * Renders the red dots on the threat heatmap based on saved data.
+ */
 function initHeatmap() {
     const container = document.getElementById('heatmapContainer');
     container.innerHTML = "";
@@ -142,22 +213,27 @@ function initHeatmap() {
     });
 }
 
+/**
+ * Helper to determine if a message is SECURE, MEDIUM, or HIGH risk.
+ */
 function getRiskDetails(originalText, maskedText) {
     let riskLevel = "SECURE"; 
     let riskColor = "#86efac";
 
-    let highRegex = /\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b|\b[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\b|\b\d{12}\b|\b\d{4}\s\d{4}\s\d{4}\b|(?:ignore all|forget all|bypass|do anything now|\bdan\b|system prompt|jailbreak)/i;
-    let medRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
-    let phoneRegex = /\b\d{10}\b/;
-    let addrRegex = /(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Providence|Province|Country)\b/i;
+    const highRegex = /\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b|\b[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\b|\b\d{12}\b|\b\d{4}\s\d{4}\s\d{4}\b|(?:ignore all|forget all|bypass|do anything now|\bdan\b|system prompt|jailbreak)/i;
+    const medRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/i;
+    const phoneRegex = /\b\d{10}\b/;
+    
+    const addrDetectionRegex = /(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Country|live in|am from|belong to|belong from)\b/i;
+    const addrVisibilityRegex = /\b(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Country)\b/i;
 
     let hasHigh = highRegex.test(originalText) || maskedText.includes("CARD") || maskedText.includes("PAN") || maskedText.includes("AADHAAR") || maskedText.includes("PROMPT_INJECTION");
-    let hasMed = medRegex.test(originalText) || phoneRegex.test(originalText) || addrRegex.test(originalText) || maskedText.includes("EMAIL") || maskedText.includes("PHONE") || maskedText.includes("ADDRESS") || maskedText.includes("NAME");
+    let hasMed = medRegex.test(originalText) || phoneRegex.test(originalText) || addrDetectionRegex.test(originalText) || maskedText.includes("EMAIL") || maskedText.includes("PHONE") || maskedText.includes("ADDRESS") || maskedText.includes("NAME");
 
     if (!hasMed && !hasHigh) {
-        let name1 = /\b(?:my name is|i am|i\'m|this is|call me|name is|it is|it was|it\'s)\s+[a-zA-Z]+/i.test(originalText);
-        let name2 = /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/.test(originalText);
-        if (name1 || name2) hasMed = true;
+        let nameIntro = /\b(?:my name is|i am|i\'m|this is|call me|name is)\s+[a-zA-Z]+/i.test(originalText);
+        let nameStandalone = /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/.test(originalText);
+        if (nameIntro || nameStandalone) hasMed = true;
     }
 
     if (hasHigh) {
@@ -166,49 +242,67 @@ function getRiskDetails(originalText, maskedText) {
         riskLevel = "MEDIUM"; riskColor = "#fbbf24";
     }
 
-    if (riskLevel !== "SECURE" && originalText === maskedText) {
+    const stillHasMed = medRegex.test(maskedText) || phoneRegex.test(maskedText) || addrVisibilityRegex.test(maskedText);
+    const stillHasHigh = highRegex.test(maskedText); 
+    
+    // FIX: Check for BOTH single-word intro names (e.g., "I am Parikshit") AND two-word standalone names
+    let nameStillVisible = false;
+    const nameIntroRegex = /\b(?:my name is|i am|i\'m|this is|call me|name is)\s+(?!a\b|an\b|the\b)[a-zA-Z]+/i;
+    const standaloneNamePattern = /\b[A-Z][a-z]+\s[A-Z][a-z]+\b/;
+    
+    if (nameIntroRegex.test(maskedText) || standaloneNamePattern.test(maskedText)) {
+        if (!addrVisibilityRegex.test(maskedText)) {
+            nameStillVisible = true;
+        }
+    }
+
+    // FINAL FLAG
+    if (riskLevel !== "SECURE" && (stillHasMed || stillHasHigh || nameStillVisible)) {
         riskLevel += " (UNMASKED)";
     }
 
     return { level: riskLevel, color: riskColor };
 }
 
-function downloadPDF() {
-    window.scrollTo(0, 0); 
-    const tbody = document.querySelector('#historyTable tbody');
-    const logsToShow = allLogsData.slice(0, 10);
-    
-    tbody.innerHTML = logsToShow.map(row => {
-        const riskData = getRiskDetails(row[1], row[2]);
-        return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskData.color}">${riskData.level}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
-    }).join('');
-    
-    const element = document.getElementById('pdf-export-area');
-    const opt = { margin: 10, filename: 'Secure_Gateway_Executive_Report.pdf', image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0d0d10', scrollY: 0, windowY: 0 }, jsPDF: { unit: 'mm', format: 'a3', orientation: 'portrait' } };
-    setTimeout(() => { html2pdf().set(opt).from(element).save().then(() => { renderTable(); }); }, 100);
-}
-
+/**
+ * Fires off the user's message to the backend LLM, updates charts, and handles the response.
+ */
 async function sendMessage() {
     const input = document.getElementById('userInput');
     const text = input.value.trim();
     if(!text) return;
-    const maskOptions = { name: document.getElementById('maskName').checked, phone: document.getElementById('maskPhone').checked, email: document.getElementById('maskEmail').checked, address: document.getElementById('maskAddress').checked, card: document.getElementById('maskCard').checked };
+
     const chatbox = document.getElementById('chatbox');
     chatbox.innerHTML += `<div class="user-msg">${text}</div>`;
-    localStorage.setItem('chatHistory', chatbox.innerHTML);
     input.value = '';
+
+    // Quick check to see if Ollama is even running before we bother trying
+    const statusText = document.getElementById('model-status-text').innerText;
+    if (statusText === 'Disconnected') {
+        chatbox.innerHTML += `<div class="ai-msg">System Offline: Please connect to Ollama!</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+        localStorage.setItem('chatHistory', chatbox.innerHTML);
+        return; 
+    }
+
+    // Grab the current state of the sidebar toggles
+    const maskOptions = { name: document.getElementById('maskName').checked, phone: document.getElementById('maskPhone').checked, email: document.getElementById('maskEmail').checked, address: document.getElementById('maskAddress').checked, card: document.getElementById('maskCard').checked };
+    localStorage.setItem('chatHistory', chatbox.innerHTML);
+    
     try {
         const response = await fetchWithAuth('/ask', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: text, options: maskOptions }) });
         const data = await response.json();
         chatbox.innerHTML += `<div class="ai-msg">${data.ai_answer}</div>`;
         chatbox.scrollTop = chatbox.scrollHeight;
         localStorage.setItem('chatHistory', chatbox.innerHTML);
+        
+        // Update charts if the backend caught anything
         if(data.entity_count) {
             entitiesCount += data.entity_count;
             document.getElementById('entities-detected').innerText = entitiesCount;
             let govtCount = 0; let emailCount = 0; let phoneCount = 0; let addressCount = 0; let cardCount = 0; let injectionCount = 0;
             
-            const injectionRegex = /\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|bypass|do anything now|dan|system prompt|jailbreak)\b/gi;
+            const injectionRegex = /\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|forget all the instructions|forget all instructions|ignore all instructions|disregard previous instructions|bypass|do anything now|dan|system prompt|jailbreak|you are now|act as|roleplay as)\b/gi;
             const injectionMatches = text.match(injectionRegex);
             if(injectionMatches) injectionCount += injectionMatches.length;
             
@@ -228,9 +322,19 @@ async function sendMessage() {
             }
             
             if (maskOptions.address) {
+                let tempAddrText = text;
                 const addressRegex = /\b(?:\d{1,5}[a-zA-Z]?\s*[,\-]?\s*)?(?:(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+\s+){0,3}(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Providence|Province|Country)\b(?:\s+(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+){0,3}/gi;
-                if(text.match(addressRegex)) {
-                    let tempAddrText = text.replace(addressRegex, "<ADDRESS>");
+                
+                // Mask formal addresses
+                tempAddrText = tempAddrText.replace(addressRegex, "<ADDRESS>");
+                
+                // Mask conversational locations
+                const locRegex = /\b(?:live in|am from|belong to|belong from)\s+([a-zA-Z]+(?:\s[a-zA-Z]+)?)\b/gi;
+                tempAddrText = tempAddrText.replace(locRegex, function(match, p1) {
+                    return match.replace(p1, "<ADDRESS>");
+                });
+
+                if (tempAddrText !== text) {
                     tempAddrText = tempAddrText.replace(/(?:<ADDRESS>[\s,]*)+/g, "<ADDRESS> ");
                     let finalAddrMatches = tempAddrText.match(/<ADDRESS>/g);
                     if(finalAddrMatches) addressCount += finalAddrMatches.length;
@@ -251,10 +355,13 @@ async function sendMessage() {
             
             let totalFoundRegex = govtCount + emailCount + phoneCount + addressCount + cardCount + injectionCount;
             
-            // STRICT FIX: Only update name pie chart if name checkbox is TICKED
             if (maskOptions.name && data.entity_count > totalFoundRegex) { 
                 pieChart.data.datasets[0].data[2] += (data.entity_count - totalFoundRegex); 
             }
+            
+            pieChart.data.labels = basePieLabels.map((l, i) => {
+                return `${l}: ${pieChart.data.datasets[0].data[i]}`;
+            });
             
             pieChart.update();
             localStorage.setItem('savedPieData', JSON.stringify(pieChart.data.datasets[0].data));
@@ -264,6 +371,9 @@ async function sendMessage() {
     } catch (err) { console.error(err); }
 }
 
+/**
+ * Drops a random red dot on the heatmap when a threat is caught.
+ */
 function addHeatPoint(riskScore) {
     const container = document.getElementById('heatmapContainer');
     const p = document.createElement('div');
@@ -276,10 +386,14 @@ function addHeatPoint(riskScore) {
     const leftPos = Math.random() * 90 + '%'; const topPos = Math.random() * 80 + '%';
     p.style.left = leftPos; p.style.top = topPos; container.appendChild(p);
     storedHeatmapData.push({left: leftPos, top: topPos, score: riskScore, time: currentTime, date: currentDate});
+    // Keep it to a max of 20 points so the UI doesn't get cluttered
     if(storedHeatmapData.length > 20) { storedHeatmapData.shift(); if(container.firstChild) container.removeChild(container.firstChild); }
     localStorage.setItem('savedHeatmapData', JSON.stringify(storedHeatmapData));
 }
 
+/**
+ * Pulls down the latest table data and total counts from the API.
+ */
 async function loadHistory() {
     try {
         const res = await fetchWithAuth('/history');
@@ -292,6 +406,9 @@ async function loadHistory() {
     } catch (e) { console.log("History Load Error:", e); }
 }
 
+/**
+ * Draws the audit log table, grabbing either the top 8 or the full list.
+ */
 function renderTable() {
     const tbody = document.querySelector('#historyTable tbody');
     const btn = document.getElementById('seeMoreBtn');
@@ -302,11 +419,17 @@ function renderTable() {
         return `<tr><td><span class="blurred-text" onclick="this.classList.toggle('unblur')">${row[1]}</span></td><td class="tag">${row[2].replace(/</g, "&lt;")}</td><td><b style="color:${riskData.color}">${riskData.level}</b></td><td>${row[3]}</td><td style="color:#64748b; font-size:0.8em;">${row[4]}</td></tr>`;
     }).join('');
     
-    if (allLogsData.length > 8) { btn.style.display = "inline-block"; btn.innerText = showAllLogs ? "Show Less ▲" : "See More ▼"; } else { btn.style.display = "none"; }
+    if (allLogsData.length > 8) { btn.style.display = "inline-block"; btn.innerText = showAllLogs ? "Show Less ▲" : "Show More ▼"; } else { btn.style.display = "none"; }
 }
 
+/**
+ * Flips the table between showing a few logs or all of them.
+ */
 function toggleLogs() { showAllLogs = !showAllLogs; renderTable(); }
 
+/**
+ * Reads an uploaded text file and dumps it into the chat input.
+ */
 async function uploadFile() {
     const file = document.getElementById('fileInput').files[0];
     if (!file) return;
@@ -315,10 +438,28 @@ async function uploadFile() {
     reader.readAsText(file);
 }
 
+/**
+ * Wipes the heatmap UI and local storage.
+ */
 function clearHeatmap() { if(confirm("Are you sure?")) { storedHeatmapData = []; localStorage.setItem('savedHeatmapData', JSON.stringify(storedHeatmapData)); document.getElementById('heatmapContainer').innerHTML = ""; } }
 
-function clearPieChart() { if(confirm("Are you sure?")) { pieChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0]; pieChart.update(); localStorage.setItem('savedPieData', JSON.stringify([0, 0, 0, 0, 0, 0, 0])); } }
+/**
+ * Resets the pie chart back to flat zeros.
+ */
+function clearPieChart() { 
+    if(confirm("Are you sure?")) { 
+        pieChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0]; 
+        pieChart.data.labels = basePieLabels.map((l) => {
+            return `${l}: 0`;
+        });
+        pieChart.update(); 
+        localStorage.setItem('savedPieData', JSON.stringify([0, 0, 0, 0, 0, 0, 0])); 
+    } 
+}
 
+/**
+ * Hard resets the entire dashboard (DB, local storage, UI).
+ */
 async function clearEverything() {
     if(confirm("Are you sure?")) {
         await fetchWithAuth('/clear', { method: 'DELETE' });
@@ -329,6 +470,9 @@ async function clearEverything() {
     }
 }
 
+/**
+ * Downloads the full database history as a CSV file.
+ */
 async function exportCSV() { 
     try {
         const res = await fetchWithAuth('/export-csv');

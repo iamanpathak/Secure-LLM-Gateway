@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>SECURE LLM GATEWAY FRAMEWORK</title>
+    <link rel="icon" href="data:,">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -12,126 +14,302 @@
 <body>
 
 <div id="loginScreen">
-    <div class="login-box">
-        <h2 style="display: block; margin-bottom: 25px; color: #e2e8f0; letter-spacing: 1px; font-weight: 700;">Gateway Login</h2>
+    <div class="login-box panel-box">
+        <h2 style="margin-bottom: 25px; color: #f8fafc; font-weight: 600;">Gateway Login</h2>
         
-        <input type="text" id="username" class="login-input" placeholder="Username">
-        
+        <div style="position: relative; width: 100%; margin-bottom: 16px;">
+            <input type="text" id="username" class="login-input" placeholder="Username" style="margin-bottom: 0;">
+        </div>
+
         <div style="position: relative; width: 100%; margin-bottom: 25px;">
-            <input type="password" id="password" class="login-input" placeholder="Password" style="margin-bottom: 0; padding-right: 40px;" onkeypress="if(event.key==='Enter') performLogin()">
+            <input type="password" id="password" class="login-input" placeholder="Password" onkeypress="if(event.key==='Enter') performLogin()">
             <span class="eye-btn" onclick="togglePasswordVisibility()">
                 <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>
                 </svg>
             </span>
         </div>
-
-        <button class="btn-action" style="width: 100%; padding: 15px;" onclick="performLogin()">Access Framework</button>
-        <p id="loginError" style="color: #f87171; font-size: 0.85em; display: none; margin-top: 15px;">Invalid Username or Password!</p>
+        
+        <button class="btn-action" onclick="performLogin()">Access Framework</button>
+        <p id="loginError" style="color: #ef4444; font-size: 0.85em; display: none; margin-top: 15px;">Invalid Username or Password!</p>
     </div>
 </div>
 
-<div class="container" id="pdf-export-area" style="display: none;">
-    
-    <button class="btn-logout" onclick="logout()" data-html2canvas-ignore>LOGOUT</button>
-
-    <h1 style="font-weight: 700; letter-spacing: 1px; text-align: center; margin-bottom: 30px; color: #f8fafc; text-transform: uppercase; font-size: clamp(1.8rem, 3vw, 2.6rem);">
-        SECURE LLM GATEWAY FRAMEWORK
-    </h1>
-
-    <div class="dashboard-grid">
-        <div class="main-column">
-            <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                <div class="glass-card stat-card" style="flex: 1;">
-                    <span class="stat-label">Total Messages</span>
-                    <span class="stat-val" id="total-msgs">0</span>
-                </div>
-                <div class="glass-card stat-card" style="flex: 1;">
-                    <span class="stat-label">Threats Blocked</span>
-                    <span class="stat-val" id="threats-blocked" style="color:#fca5a5">0</span>
-                </div>
-                <div class="glass-card stat-card" style="flex: 1;">
-                    <span class="stat-label">SENSITIVE ENTITIES DETECTED</span>
-                    <span class="stat-val" id="entities-detected" style="color:#fcd34d">0</span>
-                </div>
-            </div>
-
-            <div class="glass-card">
-                <div id="chatbox"></div>
-                
-                <div class="mask-controls" data-html2canvas-ignore>
-                    <label><input type="checkbox" id="maskName" checked> Names</label>
-                    <label><input type="checkbox" id="maskPhone" checked> Phone</label>
-                    <label><input type="checkbox" id="maskEmail" checked> Email</label>
-                    <label><input type="checkbox" id="maskAddress" checked> Address</label>
-                    <label><input type="checkbox" id="maskCard" checked> Cards</label>
-                    <label style="opacity: 0.6; cursor: not-allowed;" title="Mandatory Security Protocol"><input type="checkbox" checked disabled> Govt IDs</label>
-                </div>
-
-                <div class="controls" data-html2canvas-ignore>
-                    <input type="file" id="fileInput" hidden onchange="uploadFile()">
-                    
-                    <button class="btn-secondary" onclick="document.getElementById('fileInput').click()" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 80px; gap: 4px; padding: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #cbd5e1;">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="12" y1="18" x2="12" y2="12"></line>
-                            <polyline points="9 15 12 12 15 15"></polyline>
-                        </svg>
-                        <span style="font-size: 0.65em; font-weight: 800; letter-spacing: 1px; color: #94a3b8;">UPLOAD</span>
-                    </button>
-
-                    <input type="text" id="userInput" placeholder="Type message or upload a file..." onkeypress="if(event.key==='Enter') sendMessage()">
-                    <button class="btn-action" onclick="sendMessage()">Send</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="sidebar-column" style="display: flex; flex-direction: column; gap: 20px;">
-            <div class="glass-card">
-                <span class="stat-label">Real-Time Threat Heatmap</span>
-                <div class="heatmap" id="heatmapContainer"></div>
-                <button class="btn-secondary" onclick="clearHeatmap()" style="width: 100%; margin-top: 15px; color: #fca5a5; font-size: 0.85em;" data-html2canvas-ignore>Clear Heatmap Data</button>
+<div id="pdf-export-area" style="display: none;">
+    <div class="app-layout">
+        
+        <aside class="sidebar" id="controlSidebar" data-html2canvas-ignore>
+            <div class="sidebar-header" style="display: flex; justify-content: flex-end; padding-right: 20px;">
+                <button class="btn-icon toggle-rimless" id="toggleBtn" onclick="toggleSidebar()" title="Toggle Control Panel" style="margin-left: auto; margin-right: 0;">
+                    <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="13 17 8 12 13 7"></polyline>
+                        <polyline points="18 17 13 12 18 7"></polyline>
+                    </svg>
+                </button>
             </div>
             
-            <div class="glass-card" style="text-align: center;">
-                <span class="stat-label">Threat Type Breakdown</span>
-                <div style="height: 280px; margin-top: 15px;">
-                    <canvas id="threadPieChart"></canvas>
+            <div class="sidebar-content" id="sidebarContent">
+                
+                <div class="sidebar-title-box">
+                    <h3>Control Panel</h3>
+                    <p class="sidebar-desc">Configure AI security, sanitization & data protection settings</p>
                 </div>
-                <button class="btn-secondary" onclick="clearPieChart()" style="width: 100%; margin-top: 15px; color: #fca5a5; font-size: 0.85em;" data-html2canvas-ignore>Clear Piechart Data</button>
+
+                <div class="sidebar-section" style="margin-top: 25px;">
+                    <span class="sidebar-section-title">SANITIZATION FILTERS</span>
+                    <div class="mask-controls-vertical">
+                        
+                        <label class="toggle-container">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                <span class="cb-text">Names</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" id="maskName" checked><span class="slider"></span></div>
+                        </label>
+                        
+                        <label class="toggle-container">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                <span class="cb-text">Phone</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" id="maskPhone" checked><span class="slider"></span></div>
+                        </label>
+                        
+                        <label class="toggle-container">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                <span class="cb-text">Email</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" id="maskEmail" checked><span class="slider"></span></div>
+                        </label>
+                        
+                        <label class="toggle-container">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                <span class="cb-text">Address</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" id="maskAddress" checked><span class="slider"></span></div>
+                        </label>
+                        
+                        <label class="toggle-container">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span class="cb-text">Cards</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" id="maskCard" checked><span class="slider"></span></div>
+                        </label>
+                        
+                        <label class="toggle-container disabled" title="Mandatory Security Protocol">
+                            <div class="toggle-label-group">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="15" y2="17"></line></svg>
+                                <span class="cb-text">Government IDs</span>
+                            </div>
+                            <div class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <span class="sidebar-section-title">SYSTEM ACTIONS</span>
+                    <div class="sidebar-actions-grid">
+                        <button class="btn-sidebar" onclick="clearEverything()">Clear Chat & History</button>
+                        <button class="btn-sidebar" onclick="clearHeatmap()">Clear Heatmap Data</button>
+                        <button class="btn-sidebar" onclick="clearPieChart()">Clear Pie Chart Data</button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section" style="margin-top: auto;">
+                    <div class="model-status-card">
+                        <div class="status-header">
+                            AI Engine Status
+                            <span class="status-badge" id="model-status-text" style="color: var(--text-muted);">Checking...</span>
+                        </div>
+                        <div class="model-info">
+                            Engine: Ollama
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        </aside>
 
-    <div class="header-flex">
-        <h2 class="stat-label" style="font-size: 1.2em;">📊 Audit History Logs</h2>
-        
-        <div data-html2canvas-ignore>
-            <button class="btn-secondary" onclick="downloadPDF()" style="color: #cbd5e1; margin-right: 10px;">Export PDF</button>
-            <button class="btn-secondary" onclick="exportCSV()" style="color: #bbf7d0;">Export CSV</button>
-            <button class="btn-secondary" onclick="clearEverything()" style="color: #fca5a5; margin-left:10px;">Clear Chat & History</button>
-        </div>
-    </div>
+        <main class="main-content">
+            
+            <header class="top-header">
+                <div class="header-titles">
+                    <h1 style="display: flex; align-items: center;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                            <rect x="9" y="9" width="6" height="6"></rect>
+                            <line x1="9" y1="1" x2="9" y2="4"></line>
+                            <line x1="15" y1="1" x2="15" y2="4"></line>
+                            <line x1="9" y1="20" x2="9" y2="23"></line>
+                            <line x1="15" y1="20" x2="15" y2="23"></line>
+                            <line x1="20" y1="9" x2="23" y2="9"></line>
+                            <line x1="20" y1="14" x2="23" y2="14"></line>
+                            <line x1="1" y1="9" x2="4" y2="9"></line>
+                            <line x1="1" y1="14" x2="4" y2="14"></line>
+                        </svg>
+                        Secure LLM Gateway
+                    </h1>
+                    <p>Real-time AI security monitoring & vulnerability mitigation</p>
+                </div>
+                <div class="header-right" data-html2canvas-ignore>
+                    <button class="btn-secondary logout-btn" onclick="logout()">Logout</button>
+                </div>
+            </header>
 
-    <table id="historyTable">
-        <thead>
-            <tr>
-                <th>Original Input</th>
-                <th>Secured (Masked/Unmasked)</th>
-                <th>Risk Level</th>
-                <th>AI Response</th>
-                <th>Timestamp</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    
-    <div style="display: flex; justify-content: flex-end; margin-top: 10px;" data-html2canvas-ignore>
-        <button id="seeMoreBtn" class="btn-secondary" style="display: none; padding: 6px 14px; font-size: 0.8em; border-color: transparent; background: transparent; color: #cbd5e1;" onclick="toggleLogs()">See More ▼</button>
+            <div class="metrics-row">
+                <div class="metric-card panel-box">
+                    <span class="m-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    </span>
+                    <div class="m-data">
+                        <span class="m-label">Total Messages</span>
+                        <div class="m-val" id="total-msgs">0</div>
+                    </div>
+                </div>
+                <div class="metric-card panel-box">
+                    <span class="m-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </span>
+                    <div class="m-data">
+                        <span class="m-label">Sensitive Messages</span>
+                        <div class="m-val" id="threats-blocked">0</div>
+                    </div>
+                </div>
+                <div class="metric-card panel-box">
+                    <span class="m-icon">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                    <div class="m-data">
+                        <span class="m-label">PII Masked</span>
+                        <div class="m-val" id="entities-detected">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                
+                <div class="chat-section panel-box">
+                    <div id="chatbox"></div>
+                    <div class="controls" data-html2canvas-ignore>
+                        <input type="file" id="fileInput" hidden onchange="uploadFile()">
+                        <button class="btn-icon-rimless" onclick="document.getElementById('fileInput').click()" title="Upload File">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        </button>
+                        <input type="text" id="userInput" class="chat-input" placeholder="Type your message or upload a file" onkeypress="if(event.key==='Enter') sendMessage()">
+                        <button class="btn-action-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+
+                <div class="charts-section">
+                    
+                    <div class="panel-box chart-panel">
+                        <div class="panel-header"><span class="panel-title">Real-Time Security Events Heatmap</span></div>
+                        <div class="heatmap" id="heatmapContainer"></div>
+                    </div>
+                    
+                    <div class="panel-box chart-panel">
+                        <div class="panel-header"><span class="panel-title">Sensitive Data Distribution</span></div>
+                        <div class="chart-container"><canvas id="threadPieChart"></canvas></div>
+                    </div>
+
+                    <div class="panel-box chart-panel">
+                        <div class="panel-header"><span class="panel-title">Security Stats</span></div>
+                        <div class="stats-grid">
+                            <div class="stat-mini-card">
+                                <div class="stat-label-group">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><circle cx="12" cy="11" r="3"></circle><rect x="7" y="16.5" width="10" height="2" rx="1"></rect></svg>
+                                    <span class="stat-title">JWT Auth</span>
+                                </div>
+                                <span class="stat-value text-success">Enabled</span>
+                            </div>
+                            <div class="stat-mini-card">
+                                <div class="stat-label-group">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    <span class="stat-title">Guardrails</span>
+                                </div>
+                                <span class="stat-value text-success">Active</span>
+                            </div>
+                            <div class="stat-mini-card">
+                                <div class="stat-label-group">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    <span class="stat-title">Encryption</span>
+                                </div>
+                                <span class="stat-value">Bcrypt / HS256</span>
+                            </div>
+                            <div class="stat-mini-card">
+                                <div class="stat-label-group">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 5 14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>
+                                    <span class="stat-title">Database</span>
+                                </div>
+                                <span class="stat-value">SQLite</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="table-section panel-box">
+                <div class="table-header-flex">
+                    <h3 class="panel-title" style="margin: 0;">Audit History Logs</h3>
+                    <div data-html2canvas-ignore class="table-actions">
+                        <button class="btn-secondary btn-sm" onclick="downloadPDF()">Export PDF</button>
+                        <button class="btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>Original Input</th>
+                                <th>Secured (Masked/Unmasked)</th>
+                                <th>Risk Level</th>
+                                <th>AI Response</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 15px; padding-right: 24px; padding-bottom: 24px;" data-html2canvas-ignore>
+                    <button id="seeMoreBtn" style="display: none; background: transparent; color: #8b949e; border:none; cursor:pointer; font-weight: 600;" onclick="toggleLogs()">Show More ▼</button>
+                </div>
+            </div>
+
+        </main>
     </div>
 </div>
 
+<script>
+    /**
+     * Toggles the main navigation sidebar.
+     */
+    function toggleSidebar() {
+        document.getElementById('controlSidebar').classList.toggle('collapsed');
+    }
+
+    /**
+     * Pings the local Ollama API to see if it's running.
+     * Updates the status badge in the UI.
+     */
+    async function checkOllamaStatus() {
+        const text = document.getElementById('model-status-text');
+        try {
+            await fetch('http://127.0.0.1:11434/', { mode: 'no-cors' });
+            text.innerText = 'Connected';
+            text.style.color = 'var(--success)';
+        } catch (e) {
+            text.innerText = 'Disconnected';
+            text.style.color = 'red';
+        }
+    }
+    
+    // Start polling immediately and then check every 2 seconds
+    checkOllamaStatus();
+    setInterval(checkOllamaStatus, 2000);
+</script>
 <script src="/static/script.js"></script>
 </body>
 </html>

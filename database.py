@@ -2,14 +2,19 @@ import sqlite3
 from datetime import datetime
 import bcrypt
 
-# Maintain the same database name used in main.py
+# Database file name
 DB_NAME = 'chat_history.db'
 
 def init_db():
+    """
+    Sets up the SQLite database and tables. 
+    Creates a default admin user on the first run if one doesn't exist.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # 1. Core history table (Kept simple without user_id to prevent crashes)
+    # Main history table. We're keeping it simple without user_ids 
+    # to decouple logs from specific accounts and prevent constraint crashes.
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,7 +25,7 @@ def init_db():
         )
     ''')
 
-    # 2. Users table for Authentication (Login system)
+    # Table for login credentials
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -29,10 +34,10 @@ def init_db():
         )
     ''')
 
-    # 3. Create a default Admin account (if it doesn't already exist)
+    # Create a default admin account if the users table is empty
     cursor.execute('SELECT * FROM users WHERE username="admin"')
     if not cursor.fetchone():
-        # Encrypting the default password 'admin123'
+        # Hash the default password using bcrypt before saving
         hashed = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt())
         cursor.execute('INSERT INTO users (username, password_hash) VALUES (?, ?)', ("admin", hashed.decode('utf-8')))
         print("Default Admin created: admin / admin123")
@@ -41,7 +46,16 @@ def init_db():
     conn.close()
 
 def verify_user(username, password):
-    """Verifies if the provided username and password are correct"""
+    """
+    Checks if the provided username and password match our stored bcrypt hash.
+    
+    Args:
+        username (str): The typed username.
+        password (str): The plain text password.
+        
+    Returns:
+        bool: True if the password matches, False otherwise.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute('SELECT password_hash FROM users WHERE username=?', (username,))
@@ -50,17 +64,24 @@ def verify_user(username, password):
     
     if row:
         hashed_password = row[0].encode('utf-8')
-        # Using Bcrypt to check if the typed password matches the stored hash
+        # Compare the plain password against the stored hash
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password):
             return True
     return False
 
 def save_to_history(original, secured, response):
-    """Saves chat to database with 3 arguments (matched with main.py)"""
+    """
+    Saves a single chat interaction to the history table.
+    
+    Args:
+        original (str): Raw user input.
+        secured (str): Masked input sent to the LLM.
+        response (str): The AI's reply.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     
-    # Custom timestamp format: DD/MM/YYYY HH:MM AM/PM
+    # Format timestamp for the UI (e.g., 24/03/2026 01:04 AM)
     now = datetime.now().strftime("%d/%m/%Y %I:%M %p") 
     
     cursor.execute('''
@@ -72,17 +93,23 @@ def save_to_history(original, secured, response):
     conn.close()
 
 def fetch_history():
-    """Fetches all history logs"""
+    """
+    Gets all chat logs from the database, newest first.
+    
+    Returns:
+        list: A list of tuples containing the rows.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
-    # Fetching id, original_input, secured_input, ai_response, and timestamp
     cursor.execute('SELECT * FROM history ORDER BY id DESC')
     rows = cursor.fetchall()
     conn.close()
     return rows
 
 def clear_history():
-    """Wipes all data for a fresh start"""
+    """
+    Deletes all rows from the history table. Useful for UI resets.
+    """
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM history")
