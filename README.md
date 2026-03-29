@@ -59,7 +59,7 @@ Demonstrating the gateway intercepting a malicious prompt injection (`forget all
 ![Prompt Injection Blocked](assets/injection_blocked.png)
 
 ### 4. Immutable Audit Trail
-The compliance log. It records the original input (blurred for privacy), the dynamically secured output (showing `<TAGS>`), the computed risk level (`SECURE`, `MEDIUM`, `HIGH`), and the timestamp. You can see the `MEDIUM (UNMASKED)` flag actively catching instances where toggles were disabled but sensitive data was still detected.
+The compliance log. It records the original input (blurred for privacy), the dynamically secured output (showing `<TAGS>`), the computed risk level (`SECURE`, `MEDIUM`, `HIGH`), and the timestamp. You can see the `MEDIUM (UNMASKED)` flag actively catching instances where toggles were disabled but sensitive data was still detected. Includes a one-click **Export** feature to generate `CSV`/`PDF` reports for security audits.
 
 ![Audit Logs](assets/audit_history_logs.png)
 
