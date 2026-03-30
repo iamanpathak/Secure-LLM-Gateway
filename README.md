@@ -1,9 +1,11 @@
 # Secure LLM Gateway: Vulnerability Mitigation Framework
 
-[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![Ollama](https://img.shields.io/badge/AI_Engine-Ollama-orange.svg)](https://ollama.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Ollama](https://img.shields.io/badge/AI_Engine-Ollama-F97316?logo=ollama&logoColor=white)](https://ollama.com/)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-07405E?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![JWT](https://img.shields.io/badge/Security-JWT-black?logo=JSON%20web%20tokens)](https://jwt.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
 Hey! I'm Aman. I built this project to demonstrate how organizations can safely integrate Large Language Models (LLMs) without compromising user privacy or system security. Instead of connecting end-users directly to an AI, I engineered a locally-hosted middleware that acts as a secure proxy, dynamically filtering out sensitive data and blocking malicious inputs in real-time.
 
