@@ -1,10 +1,13 @@
 # Virtual Environments
 .venv/
 venv/
+env/
 ENV/
 
 # Security / Environment Variables
 .env
+.env.*
+!.env.example
 
 # Python Cache
 __pycache__/
@@ -12,9 +15,14 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Database (If you are using SQLite or similar file-based databases)
+# Database (SQLite)
 *.db
 *.sqlite3
 
 # OS generated files
 .DS_Store
+Thumbs.db
+
+# IDE / Editor files
+.vscode/
+.idea/

@@ -17,7 +17,7 @@ Hey! I'm Aman. I built this project to demonstrate how organizations can safely 
 1. **Data Exfiltration:** Users accidentally sharing Personally Identifiable Information (PII) like credit cards, Aadhaar numbers, or addresses.
 2. **Prompt Injection:** Attackers using malicious instructions to bypass system guardrails, hijack the AI's logic, or extract backend secrets.
 
-**The Solution:** A lightweight, high-performance security gateway built with FastAPI. It intercepts every request, runs a multi-pass sanitization engine (Regex + Contextual checks) to redact PII, actively blocks prompt injection signatures, and logs every event into an immutable audit trail—all before the data ever reaches the local Ollama LLM.
+**The Solution:** A lightweight, high-performance security gateway built with FastAPI. It intercepts every request, runs a multi-pass sanitization engine (Regex + Contextual checks) to redact PII, actively blocks prompt injection signatures, and logs every event into an immutable audit trail-all before the data ever reaches the local Ollama LLM.
 
 ---
 
