@@ -70,7 +70,7 @@ The compliance log. It records the original input (blurred for privacy), the dyn
 ## 📂 Project Structure
 
 ```text
-secure-gateway-framework/
+secure-llm-gateway/
 ├── assets/                    # Live system screenshots for documentation
 ├── static/
 │   ├── script.js              # Frontend logic, charts, and API communication
@@ -81,9 +81,6 @@ secure-gateway-framework/
 ├── sanitizer.py               # Core logic for PII masking & injection detection
 ├── .env.example               # Template for environment variables
 ├── requirements.txt           # Backend dependencies
-├── chat_history.db            # SQLite DB for chat states
-├── history.db                 # SQLite DB for historical metrics
-├── security_gateway.db        # SQLite DB for immutable audit logging
 ├── LICENSE                    # MIT License file
 └── README.md                  # Project documentation
 ```
