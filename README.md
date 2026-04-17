@@ -1,4 +1,4 @@
-# LLM Sentinel: Vulnerability Mitigation Framework
+# LLM Sentinel: AI Security Gateway
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
