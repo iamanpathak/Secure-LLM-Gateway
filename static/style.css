@@ -160,16 +160,50 @@ input:checked + .slider:before { transform: translateX(16px); background-color: 
 .chat-section { display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 .charts-section { display: flex; flex-direction: column; gap: 25px; }
 
-/* Chatbox & Message bubbles */
-#chatbox { flex: 1 1 auto; height: 400px; padding: 24px; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 20px; background: var(--bg-panel); border-radius: 12px 12px 0 0;}
-
-.user-msg {
-    background: var(--bg-input); color: var(--text-bright); padding: 12px 18px; border-radius: 18px 18px 4px 18px; align-self: flex-start; max-width: 80%; font-size: 0.9em; border: 1px solid #334155;
-    word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap;
+/* Chatbox Container - Flex column enables easy alignment of individual bubbles */
+#chatbox { 
+    flex: 1 1 auto; 
+    height: 400px; 
+    padding: 24px; 
+    overflow-y: auto; 
+    overflow-x: hidden; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px; 
+    background: var(--bg-panel); 
+    border-radius: 12px 12px 0 0;
 }
+
+/* User Message - Neutral/Dark Style on the RIGHT */
+.user-msg {
+    align-self: flex-end; /* Moves to Right */
+    background: var(--bg-input); 
+    color: var(--text-bright); 
+    padding: 12px 18px; 
+    /* Tail points to the bottom-right corner */
+    border-radius: 18px 18px 4px 18px; 
+    max-width: 80%; 
+    font-size: 0.9em; 
+    border: 1px solid #334155;
+    word-break: break-word; 
+    overflow-wrap: break-word; 
+    white-space: pre-wrap;
+}
+
+/* AI Message - Bluish Gradient Style on the LEFT */
 .ai-msg {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.1)); color: var(--text-bright); padding: 12px 18px; border-radius: 18px 18px 18px 4px; align-self: flex-end; max-width: 80%; font-size: 0.9em; border: 1px solid rgba(99, 102, 241, 0.25);
-    word-break: break-word; overflow-wrap: break-word; white-space: pre-wrap;
+    align-self: flex-start; /* Moves to Left */
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(79, 70, 229, 0.1)); 
+    color: var(--text-bright); 
+    padding: 12px 18px; 
+    /* Tail points to the bottom-left corner */
+    border-radius: 18px 18px 18px 4px; 
+    max-width: 80%; 
+    font-size: 0.9em; 
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    word-break: break-word; 
+    overflow-wrap: break-word; 
+    white-space: pre-wrap;
 }
 
 .controls { display: flex; align-items: center; gap: 12px; padding: 18px 24px; border-top: 1px solid var(--border-color); background: rgba(255,255,255,0.01); border-radius: 0 0 12px 12px;}

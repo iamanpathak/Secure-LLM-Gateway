@@ -131,15 +131,15 @@ async def ask(data: dict, current_user: str = Depends(get_current_user)):
         lower_text = clean_text.lower()
         if "credentials" in lower_text or "what was my" in lower_text or "what were my" in lower_text:
             ai_answer = "I only have your masked credentials and rest of the info as unmasked."
-        elif "previously told" in lower_text or "what i told" in lower_text or "what did i say" in lower_text:
-            ai_answer = "I only have your masked data, what else can I help you with?"
+        elif "previous" in lower_text or "what i told" in lower_text or "what did i say" in lower_text:
+            ai_answer = "Sentinel Shield is active. Your previous inputs were masked at the gateway to protect your privacy. How else can I assist you?"
         elif "joke" in lower_text:
             ai_answer = "Why do programmers prefer dark mode? Because light attracts bugs!"
         elif "<" in clean_text:  # If the gateway masked anything (like <NAME> or <EMAIL>)
             ai_answer = "Sure, how can I help you?"
         else:
             # Fallback for normal, safe messages
-            ai_answer = "I am a secure AI. How can I assist you today?"
+            ai_answer = "Hello! I am Sentinel, your secure AI. How can I assist you today?"
 
     except Exception as e:
         ai_answer = "System Offline: Please check LLM connectivity."

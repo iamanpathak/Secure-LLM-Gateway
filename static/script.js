@@ -302,7 +302,7 @@ async function sendMessage() {
             document.getElementById('entities-detected').innerText = entitiesCount;
             let govtCount = 0; let emailCount = 0; let phoneCount = 0; let addressCount = 0; let cardCount = 0; let injectionCount = 0;
             
-            const injectionRegex = /\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|forget all the instructions|forget all instructions|ignore all instructions|disregard previous instructions|bypass|do anything now|dan|system prompt|jailbreak|you are now|act as|roleplay as)\b/gi;
+            const injectionRegex = /\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|forget all the instructions|forget all instructions|ignore all instructions|disregard previous instructions|bypass|do anything now|dan|system prompt|jailbreak|you are now|act as|roleplay as|pretend to be|developer mode|system instructions|core instructions|repeat the words above|from now on|new rules|sudo mode|god mode|override|simulate|hypothetical scenario)\b/gi;
             const injectionMatches = text.match(injectionRegex);
             if(injectionMatches) injectionCount += injectionMatches.length;
             

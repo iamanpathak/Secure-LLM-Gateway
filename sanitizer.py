@@ -16,8 +16,8 @@ class Sanitizer:
             "DL": r'\b[a-zA-Z]{2}[0-9]{2}\s?[0-9]{11}\b', 
             "CREDIT_CARD": r'\b(?:\d{4}[-\s]?){3}\d{4}\b|\b\d{13,16}\b',
             "ADDRESS": r'\b(?:\d{1,5}[a-zA-Z]?\s*[,\-]?\s*)?(?:(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+\s+){0,3}(?:Street|St|Road|Rd|Avenue|Ave|Marg|Vihar|Nagar|Enclave|Sector|Phase|Block|Area|City|Village|State|County|Providence|Province|Country)\b(?:\s+(?!(?:my|address|is|are|was|were|live|at|in|on|and)\b)[a-zA-Z0-9.,-]+){0,3}',
-            # FIX: Added "the" variations to catch sneaky jailbreak attempts
-            "INJECTION": r'(?i)\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|forget all the instructions|forget all instructions|ignore all instructions|disregard previous instructions|bypass|do anything now|dan|system prompt|jailbreak|you are now|act as|roleplay as)\b'
+            # COMPREHENSIVE PROMPT INJECTION & JAILBREAK SIGNATURES
+            "INJECTION": r'(?i)\b(?:ignore all the previous instructions|forget all the previous instructions|ignore all previous instructions|forget all previous instructions|forget all the instructions|forget all instructions|ignore all instructions|disregard previous instructions|bypass|do anything now|dan|system prompt|jailbreak|you are now|act as|roleplay as|pretend to be|developer mode|system instructions|core instructions|from now on|new rules|sudo mode|god mode|override|simulate|hypothetical scenario)\b'
         }
 
     def mask_data(self, text, options):

@@ -1,4 +1,4 @@
-# Secure LLM Gateway: Vulnerability Mitigation Framework
+# LLM Sentinel: Vulnerability Mitigation Framework
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -7,7 +7,7 @@
 [![JWT](https://img.shields.io/badge/Security-JWT-D63AFF?logo=JSON%20web%20tokens&logoColor=white)](https://jwt.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow)](https://opensource.org/licenses/MIT)
 
-Hey! I'm Aman. I built this project to demonstrate how organizations can safely integrate Large Language Models (LLMs) without compromising user privacy or system security. Instead of connecting end-users directly to an AI, I engineered a locally-hosted middleware that acts as a secure proxy, dynamically filtering out sensitive data and blocking malicious inputs in real-time.
+Hey! I'm Aman. I built **Sentinel** to demonstrate how organizations can safely integrate Large Language Models (LLMs) without compromising user privacy or system security. Instead of connecting end-users directly to an AI, I engineered a locally-hosted middleware that acts as a secure proxy, dynamically filtering out sensitive data and blocking malicious inputs in real-time.
 
 ---
 
@@ -17,7 +17,7 @@ Hey! I'm Aman. I built this project to demonstrate how organizations can safely 
 1. **Data Exfiltration:** Users accidentally sharing Personally Identifiable Information (PII) like credit cards, Aadhaar numbers, or addresses.
 2. **Prompt Injection:** Attackers using malicious instructions to bypass system guardrails, hijack the AI's logic, or extract backend secrets.
 
-**The Solution:** A lightweight, high-performance security gateway built with FastAPI. It intercepts every request, runs a multi-pass sanitization engine (Regex + Contextual checks) to redact PII, actively blocks prompt injection signatures, and logs every event into an immutable audit trail-all before the data ever reaches the local Ollama LLM.
+**The Solution:** A lightweight, high-performance security gateway built with FastAPI. It intercepts every request, runs a multi-pass sanitization engine (Regex + Contextual checks) to redact PII, actively blocks prompt injection signatures, and logs every event into an immutable audit trail — all before the data ever reaches the target LLM, ensuring a secure, zero-dependency defense layer.
 
 ---
 
@@ -70,7 +70,7 @@ The compliance log. It records the original input (blurred for privacy), the dyn
 ## 📂 Project Structure
 
 ```text
-secure-llm-gateway/
+llm-sentinel/
 ├── assets/                    # Live system screenshots for documentation
 ├── static/
 │   ├── script.js              # Frontend logic, charts, and API communication
@@ -89,10 +89,12 @@ secure-llm-gateway/
 
 ## ⚖️ Architecture Tradeoffs & Design Choices
 
-* **Local LLM (Ollama) vs. Cloud Providers:** I chose Ollama to guarantee 100% data sovereignty. *Tradeoff:* Bounded by local compute limits compared to accessing massive cloud APIs like OpenAI, but entirely eliminates external API data-sharing risks.
-* **Regex/Heuristics vs. NLP Models for PII:** The sanitization engine uses optimized regular expressions and contextual visibility checks instead of heavy ML models. *Tradeoff:* Incredibly fast (sub-millisecond latency) making it viable as a real-time gateway, but may lack the deep semantic understanding of a dedicated NLP classification model.
+* **Local LLM (Ollama) vs. Cloud Providers:** I chose Ollama to guarantee 100% data sovereignty.
+  *Tradeoff:* Bounded by local compute limits compared to accessing massive cloud APIs like OpenAI, but entirely eliminates external API data-sharing risks.
+* **Regex/Heuristics vs. NLP Models for PII:** The sanitization engine uses optimized regular expressions and contextual visibility checks instead of heavy ML models.*Tradeoff:* Incredibly fast (sub-millisecond latency) making it viable as a real-time gateway, but may lack the deep semantic understanding of a dedicated NLP classification model.
 * **Dynamic Risk Scoring:** Implemented an intelligent detection system that differentiates between harmless conversational fillers ("I live in") and actual data exposure. *Tradeoff:* Requires stricter pattern maintenance, but drastically reduces false positives for the end-user.
-* **SQLite vs. PostgreSQL:** Used SQLite for the audit and history databases. *Tradeoff:* Perfect for a lightweight, zero-config local gateway demonstration, but would require migrating to PostgreSQL for distributed, high-concurrency enterprise deployments.
+* **SQLite vs. PostgreSQL:** Used SQLite for the audit and history databases.
+*Tradeoff:* Perfect for a lightweight, zero-config local gateway demonstration, but would require migrating to PostgreSQL for distributed, high-concurrency enterprise deployments.
 
 ---
 
@@ -101,8 +103,8 @@ secure-llm-gateway/
 ### 1. Clone & Setup
 
 ```bash
-git clone https://github.com/iamanpathak/secure-llm-gateway.git
-cd secure-llm-gateway
+git clone https://github.com/iamanpathak/llm-sentinel.git
+cd llm-sentinel
 
 # Create and activate virtual environment
 python -m venv .venv
