@@ -89,12 +89,13 @@ llm-sentinel/
 
 ## ⚖️ Architecture Tradeoffs & Design Choices
 
-* **Local LLM (Ollama) vs. Cloud Providers:** I chose Ollama to guarantee 100% data sovereignty.
-  *Tradeoff:* Bounded by local compute limits compared to accessing massive cloud APIs like OpenAI, but entirely eliminates external API data-sharing risks.
-* **Regex/Heuristics vs. NLP Models for PII:** The sanitization engine uses optimized regular expressions and contextual visibility checks instead of heavy ML models.*Tradeoff:* Incredibly fast (sub-millisecond latency) making it viable as a real-time gateway, but may lack the deep semantic understanding of a dedicated NLP classification model.
+* **Local LLM (Ollama) vs. Cloud Providers:** I chose Ollama to guarantee 100% data sovereignty. *Tradeoff:* Bounded by local compute limits compared to accessing massive cloud APIs like OpenAI, but entirely eliminates external API data-sharing risks.
+
+* **Regex/Heuristics vs. NLP Models for PII:** The sanitization engine uses optimized regular expressions and contextual visibility checks instead of heavy ML models. *Tradeoff:* Incredibly fast (sub-millisecond latency) making it viable as a real-time gateway, but may lack the deep semantic understanding of a dedicated NLP classification model.
+
 * **Dynamic Risk Scoring:** Implemented an intelligent detection system that differentiates between harmless conversational fillers ("I live in") and actual data exposure. *Tradeoff:* Requires stricter pattern maintenance, but drastically reduces false positives for the end-user.
-* **SQLite vs. PostgreSQL:** Used SQLite for the audit and history databases.
-*Tradeoff:* Perfect for a lightweight, zero-config local gateway demonstration, but would require migrating to PostgreSQL for distributed, high-concurrency enterprise deployments.
+
+* **SQLite vs. PostgreSQL:** Used SQLite for the audit and history databases. *Tradeoff:* Perfect for a lightweight, zero-config local gateway demonstration, but would require migrating to PostgreSQL for distributed, high-concurrency enterprise deployments.
 
 ---
 
