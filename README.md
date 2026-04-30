@@ -26,17 +26,17 @@ Hey! I'm Aman. I built **Sentinel** to demonstrate how organizations can safely 
 I designed this gateway with a "Privacy by Design" architecture. Processing happens 100% locally, ensuring zero data leaves the host machine.
 
 ```text
-  [Web UI / Client] ──(HTTP POST)──> [FastAPI Security Gateway]
-                                                │
-                                                ▼
-                                [Multi-Pass Sanitization Engine]
-                                ├─ 1. PII Redaction (Regex/Context)
-                                └─ 2. Injection Signature Scanning
-                                                │
-                       ┌────────────────────────┴────────────────────────┐
-                       ▼                                                 ▼
-               [SQLite Audit DB]                                 [Ollama AI Engine]
-              (Immutable Logging) ◄──(AI Response / Block Status)── (tinyllama)
+       [Web UI / Client] ──(HTTP POST)──> [FastAPI Security Gateway]
+                                                     │
+                                                     ▼
+                                     [Multi-Pass Sanitization Engine]
+                                     ├─ 1. PII Redaction (Regex/Context)
+                                     └─ 2. Injection Signature Scanning
+                                                     │
+                            ┌────────────────────────┴────────────────────────┐
+                            ▼                                                 ▼
+                    [SQLite Audit DB]                                 [Ollama AI Engine]
+                   (Immutable Logging) ◄──(AI Response / Block Status)── (tinyllama)
 ```
 
 ---
