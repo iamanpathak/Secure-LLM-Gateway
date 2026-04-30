@@ -81,7 +81,7 @@ llm-sentinel/
 ├── sanitizer.py               # Core logic for PII masking & injection detection
 ├── .env.example               # Template for environment variables
 ├── requirements.txt           # Backend dependencies
-├── LICENSE                    # MIT License file
+├── LICENSE                    # MIT License
 └── README.md                  # Project documentation
 ```
 
