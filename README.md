@@ -27,12 +27,12 @@ I designed this gateway with a "Privacy by Design" architecture. Processing happ
 
 ```text
           [Web UI / Client] ──(HTTP POST)──> [FastAPI Security Gateway]
-                                                           │
-                                                           ▼
-                                            [Multi-Pass Sanitization Engine]
-                                            ├─ 1. PII Redaction (Regex/Context)
-                                            └─ 2. Injection Signature Scanning
-                                                           │
+                                                   │
+                                                   ▼
+                                    [Multi-Pass Sanitization Engine]
+                                    ├─ 1. PII Redaction (Regex/Context)
+                                    └─ 2. Injection Signature Scanning
+                                                   │
               ┌────────────────────────────────────┴────────────────────────────────────┐
               ▼                                                                         ▼
       [SQLite Audit DB]                                                         [Ollama AI Engine]
