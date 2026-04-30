@@ -26,7 +26,7 @@ Hey! I'm Aman. I built **Sentinel** to demonstrate how organizations can safely 
 I designed this gateway with a "Privacy by Design" architecture. Processing happens 100% locally, ensuring zero data leaves the host machine.
 
 ```text
-[Web UI / Client] ──(HTTP POST)──> [FastAPI Security Gateway]
+  [Web UI / Client] ──(HTTP POST)──> [FastAPI Security Gateway]
                                                 │
                                                 ▼
                                 [Multi-Pass Sanitization Engine]
