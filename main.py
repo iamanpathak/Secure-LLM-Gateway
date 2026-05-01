@@ -30,7 +30,7 @@ init_db()
 # ==========================================
 # JWT Security Config
 # ==========================================
-SECRET_KEY = os.getenv("JWT_SECRET", "local-dev-fallback-secret-2026")  # Fetch secret from .env, with a local testing fallback
+SECRET_KEY = os.getenv("JWT_SECRET", "local-dev-fallback-secret-2026")  # Fetch secret key from .env, with a local testing fallback
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120  # How long the user stays logged in
 
