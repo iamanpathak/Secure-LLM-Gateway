@@ -11,6 +11,7 @@ import csv
 from io import StringIO
 from datetime import datetime, timedelta
 import jwt
+import os
 
 # Local Module Imports
 from database import init_db, save_to_history, fetch_history, clear_history, verify_user
@@ -29,7 +30,7 @@ init_db()
 # ==========================================
 # JWT Security Config
 # ==========================================
-SECRET_KEY = "super-secure-llm-gateway-secret-key-2026"  # Note: Move to .env for production
+SECRET_KEY = os.getenv("JWT_SECRET", "local-dev-fallback-secret-2026")  # Fetch secret from .env, with a local testing fallback
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120  # How long the user stays logged in
 

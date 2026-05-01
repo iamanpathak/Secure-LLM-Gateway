@@ -26,3 +26,7 @@ Thumbs.db
 # IDE / Editor files
 .vscode/
 .idea/
+
+# Exported Data
+*.csv
+security_logs.csv
